@@ -3,7 +3,7 @@ STC3115 fuel gauge Open source generic driver
 
 Hardware:
 ----------------
-Any platform with I2C master (pin SCL & SDA) connected to STC3115 I2C Slave
+Can be use on any platform with I2C Master (pin SCL & SDA) connected to STC3115 I2C Slave.
 For instance: STM32 Nucleo board, STM32 discovery board, Arduino, ...
 
 SW Requirements:

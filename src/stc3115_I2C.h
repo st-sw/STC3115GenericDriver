@@ -1,7 +1,7 @@
 /******************** (C) COPYRIGHT 2011 STMicroelectronics ********************
 * File Name          : stc3115_Battery.h
 * Author             : AMS - IMS application
-* Version            : V00
+* Version            : V01
 * Date               : 30 July 2014
 * Description        : Application/Battery description
 ********************************************************************************
@@ -11,6 +11,10 @@
 * INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
 * CONTENT OF SUCH SOFTWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+
+* THIS SOURCE CODE IS PROTECTED BY A LICENSE.
+* FOR MORE INFORMATION PLEASE CAREFULLY READ THE LICENSE AGREEMENT FILE LOCATED
+* IN THE ROOT DIRECTORY OF THIS FIRMWARE PACKAGE.
 *******************************************************************************/
 
 /* Define to prevent recursive inclusion ------------------------------------ */

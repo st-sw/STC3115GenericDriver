@@ -11,6 +11,10 @@
 * INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
 * CONTENT OF SUCH SOFTWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+
+* THIS SOURCE CODE IS PROTECTED BY A LICENSE.
+* FOR MORE INFORMATION PLEASE CAREFULLY READ THE LICENSE AGREEMENT FILE LOCATED
+* IN THE ROOT DIRECTORY OF THIS FIRMWARE PACKAGE.
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
@@ -40,11 +44,11 @@
 *******************************************************************************/
 int I2C_Write(int NumberOfBytes, int RegAddress , unsigned char *TxBuffer)
 {
-  int res;
+	int res=-1;
     
 	/*TO DO: replace with application I2C multiple write function ... */
 
-    res = I2C_WriteByte(STC3115_SLAVE_ADDRESS,RegAddress,TxBuffer,NumberOfBytes);
+	//res = My_I2C_Write(STC3115_SLAVE_ADDRESS,RegAddress,TxBuffer,NumberOfBytes);
 		
 	/*End of modification*/
 	
@@ -64,11 +68,11 @@ int I2C_Write(int NumberOfBytes, int RegAddress , unsigned char *TxBuffer)
 *******************************************************************************/
 int I2C_Read(int NumberOfBytes, int RegAddress , unsigned char *RxBuffer)
 {
-  int res;
+	int res=-1;
   
 	/*TO DO: replace with application I2C multiple read function ... */
 	
-	res = I2C_ReadByte(STC3115_SLAVE_ADDRESS,RegAddress,RxBuffer,NumberOfBytes);
+	//res = My_I2C_Read(STC3115_SLAVE_ADDRESS,RegAddress,RxBuffer,NumberOfBytes);
 
 	/*End of modification*/
 	

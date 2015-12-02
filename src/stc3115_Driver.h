@@ -11,6 +11,10 @@
 * INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
 * CONTENT OF SUCH SOFTWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+
+* THIS SOURCE CODE IS PROTECTED BY A LICENSE.
+* FOR MORE INFORMATION PLEASE CAREFULLY READ THE LICENSE AGREEMENT FILE LOCATED
+* IN THE ROOT DIRECTORY OF THIS FIRMWARE PACKAGE.
 *******************************************************************************/
 
 
@@ -25,7 +29,7 @@
 #define STC3115_REG_MODE                 0x00    /* Mode Register             			*/
 #define STC3115_REG_CTRL                 0x01    /* Control and Status Register 		*/
 #define STC3115_REG_SOC                  0x02    /* SOC Data (2 bytes) 					*/
-#define STC3115 REG_COUNTER              0x04    /* Number of Conversion (2 bytes) 		*/
+#define STC3115_REG_COUNTER              0x04    /* Number of Conversion (2 bytes) 		*/
 #define STC3115_REG_CURRENT              0x06    /* Battery Current (2 bytes) 			*/
 #define STC3115_REG_VOLTAGE              0x08    /* Battery Voltage (2 bytes) 			*/
 #define STC3115_REG_TEMPERATURE          0x0A    /* Temperature               			*/
@@ -130,7 +134,6 @@ static union {
 /* Exported functions prototypes----------------------------------------------- */
 
 #ifdef __cplusplus		//c++
-#include "Utilities.h"	//c++
 extern "C"				//c++
 {						//c++
 #endif					//c++
@@ -150,6 +153,9 @@ int STC3115_AlarmGet(void);
 int STC3115_AlarmClear(void);
 int STC3115_AlarmSetVoltageThreshold(STC3115_ConfigData_TypeDef*, int);
 int STC3115_AlarmSetSOCThreshold(STC3115_ConfigData_TypeDef*, int);
+
+int STC3115_CheckDeviceId(void);
+unsigned int STC3115_GetRunningCounter(void);
 
 #ifdef __cplusplus	//c++
 }					//c++

@@ -11,6 +11,10 @@
 * INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
 * CONTENT OF SUCH SOFTWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+
+* THIS SOURCE CODE IS PROTECTED BY A LICENSE.
+* FOR MORE INFORMATION PLEASE CAREFULLY READ THE LICENSE AGREEMENT FILE LOCATED
+* IN THE ROOT DIRECTORY OF THIS FIRMWARE PACKAGE.
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
@@ -192,7 +196,7 @@ static int STC3115_ReadWord(int RegAddress)
   {
     /* no error */
     value = data[1];
-    value = (value <<8) + data[0];
+    value = (value <<8) | data[0];
   }
   else
     value=-1;
@@ -200,6 +204,25 @@ static int STC3115_ReadWord(int RegAddress)
   return(value);
 }
 
+int STC3115_ReadUnsignedWord(unsigned int RegAddress, unsigned int * RegData)
+{
+  unsigned int data16;
+  unsigned char data8[2];
+  int status;
+
+  status = I2C_Read(2, RegAddress , data8);
+  
+  if (status >= 0)
+  {
+    /* no error */
+    data16 = data8[1];
+    data16 = (data16 <<8) | data8[0];
+  }
+  else
+    status = -1;
+
+  return(status);
+}
 
 /*******************************************************************************
 * Function Name  : STC3115_WriteWord
@@ -278,6 +301,60 @@ static int STC3115_Status(void)
   return (value);
 }
 
+
+/*******************************************************************************
+* Function Name  : STC3115_CheckDeviceId
+* Description    :  Read the hardcoded STC3115 ID number
+* Input          : pointer to char
+* Return         : status, -1 if error, -2 if bad ID
+*******************************************************************************/
+int STC3115_CheckDeviceId(void)
+{
+  unsigned char RegAddress;
+  unsigned char data8;
+  int status;
+
+  RegAddress = STC3115_REG_ID;
+  status = I2C_Read(1, RegAddress , &data8);
+
+  if (status >= 0)
+  {
+	  if(data8 == STC3115_ID)
+	  {
+		  status = 0; //OK
+	  }
+	  else
+	  {
+		  status = -2; //I2C is working, but the ID doesn't match.
+	  }
+  }
+  else
+  {
+	  status = -1; // I2C error
+  }
+
+  return(status);
+}
+
+/*******************************************************************************
+* Function Name  : STC3115_GetRunningCounter
+* Description    :  Get the STC3115 Convertion counter value
+* Input          : None
+* Return         : status word (REG_COUNTER), -1 if error
+*******************************************************************************/
+unsigned int STC3115_GetRunningCounter(void)
+{
+  unsigned int value;
+  int status;
+
+  /* read STC3115_REG_COUNTER */
+  status = STC3115_ReadUnsignedWord(STC3115_REG_COUNTER, &value);
+
+  if(status < 0) //error
+	  value = 0;
+
+  return (value);
+}
 
 /*******************************************************************************
 * Function Name  : STC3115_SetParam
@@ -718,7 +795,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   }  
   
   /* check battery presence status */
-  if ((BatteryData->status & (STC3115_BATFAIL<<8)) != 0)
+  if ((BatteryData->status & ((int)STC3115_BATFAIL<<8)) != 0)
   {
     /*Battery disconnection has been detected			*/
 		

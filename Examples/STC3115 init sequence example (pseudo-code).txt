@@ -1,0 +1,86 @@
+//===============================================
+// STC3115 Gas Gauge
+// STMicroelectronics
+//===============================================
+// Example of initialization 
+// for a new battery plugged.
+// Customize it depending on your configuration
+//===============================================
+// Syntax:
+// I2C_Read  @ADDRESS
+// I2C_Write @ADDRESS DATA
+//===============================================
+
+
+//wait the battery is relaxed (30s or more)
+
+//Check Device ID is correct (must be equal to 0x14)
+I2C_Read @0x18
+
+//Set GG_RUN to 0 if already active   (default value at init: 0x09)
+I2C_Write @0x00 0x09
+
+//clear the Power On Reset (POR) detection bit   (default value at init: 0x15)
+//and release the soft-reset
+I2C_Write @0x01 0x05
+
+//Read and store REG_OCV
+I2C_Read @0x0D  (2 byte length)
+
+
+//Write REG_OCVTAB (set the values depending on the battery characteristics)
+I2C_Write @0x30 0x00
+I2C_Write @0x31 0x00
+I2C_Write @0x32 0x00
+I2C_Write @0x33 0x00
+I2C_Write @0x34 0x00
+I2C_Write @0x35 0x00
+I2C_Write @0x36 0x00
+I2C_Write @0x37 0x00
+I2C_Write @0x38 0x00
+I2C_Write @0x39 0x00
+I2C_Write @0x3A 0x00
+I2C_Write @0x3B 0x00
+I2C_Write @0x3C 0x00
+I2C_Write @0x3D 0x00
+I2C_Write @0x3E 0x00
+I2C_Write @0x3F 0x00
+
+
+//Write REG_CC_CNF (Coulomb Counter Configuration)
+I2C_Write @0x0F 0x95
+I2C_Write @0x10 0x03
+
+//Write REG_VM_CNF (Voltage Mode Configuration)
+I2C_Write @0x11 0x21
+I2C_Write @0x12 0x03
+
+//Write REG_ALARM_SOC   (default value at init: 0x02)
+I2C_Write @0x13 0x02
+
+//Write REG_ALARM_VOLTAGE   (default value at init: 0xAA)
+I2C_Write @0x14 0xAA
+
+
+//Write GG_VM (e.g. Coulomb counter mode)
+//and Write IO0DATA for Alarm pin (default bit value is 1)
+I2C_Write @0x01 0x01
+
+//Write back REG_OCV
+I2C_Write @0x0D MYDATA1 (2 byte length)
+
+
+//Write VMODE (e.g. to Mixed mode)
+I2C_Write @0x00 0x08
+
+//Set GG_RUN to 1 (Enable GG_RUN only at the end of the init sequence)
+//(for example set value to 0x18)
+I2C_Write @0x00 0x18
+
+
+//now periodically read the state of charge REG_SOC (every 5s)
+loop
+{
+  I2C_Read @0x02  (2 byte length)
+}
+

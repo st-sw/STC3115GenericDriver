@@ -3,12 +3,19 @@ STC3115 fuel gauge Open source generic driver
 
 Hardware:
 ----------------
-Can be use on any platform with I2C Master (pin SCL & SDA) connected to STC3115 I2C Slave.  <br />
-For instance: STM32 Nucleo board, STM32 discovery board, Arduino, ... 
+Can be used on any platform with I2C Master (pin SCL & SDA) connected to I2C Slave of STC3115 device.  <br />
+For instance: STM32 Nucleo board, STM32 discovery board, Arduino, ...  <br />
+
+The STC3115 is designed to be power supplied directly from the battery. In this case, the STC3115 remains active even if the whole platform is in standby or powered off.
+
 
 SW Requirements:
 ----------------
 Implement the I2C driver dependant on your platform.
+
+SW Configuration:
+----------------
+Update the configuration file depending on the battery characteristics (Capacity, Internal Impedance, battery default OCV curve, ...), and the schematic (Resistor value used for current sensing)
 
 SW Use:
 ----------------
@@ -19,5 +26,5 @@ However, even if the driver is access every 1s, the STC3115 algorithm still work
 
 Battery State of Charge:
 ----------------
-The STC3115 drivers used the ST OptimGauge(tm) algorithm to give the Optimum accuracy regarding the estimation of the battery state of charge (in %).
+The STC3115 driver use the ST OptimGauge(tm) algorithm to give the Optimum accuracy regarding the estimation of the battery state of charge (in %).
 

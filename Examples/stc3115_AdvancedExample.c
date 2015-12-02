@@ -36,6 +36,7 @@ int main(void)
 	unsigned int CounterValue;
 	int i;
 
+	printf("STC3115 fuel gauge driver init ...\n");
 
 GasGauge_Restart:
 
@@ -95,8 +96,9 @@ GasGauge_Restart:
 	}
 
 
+#if DEBUG
 	//----------------------------------------------------------------------
-	//Check Gasgauge is running
+	//Check Gasgauge is running (also checked in GasGauge_Task)
 
 	for(i=0; i<20; i++)
 	{
@@ -118,7 +120,7 @@ GasGauge_Restart:
 		printf("STC3115: Error, GasGauge not running. Check your hardware.\n");
 		goto GasGauge_Restart;
 	}
-
+#endif
 
 	//----------------------------------------------------------------------
 	while(1) //main infinite loop
@@ -159,7 +161,7 @@ GasGauge_Restart:
 
 				if (status > 0) //OK, new data available
 				{
-					printf("Battery: SoC=%i \%, Vbat= %i mV, I=%i mA, Cap=%i mAh, T= %i °C, Pres=%i ALM=%i , CCounter=%d \r\n", 
+					printf("Battery: SoC=%i %%, Vbat= %i mV, I=%i mA, Cap=%i mAh, T= %i °C, Pres=%i ALM=%i , CCounter=%d, Time=%d s \r\n", 
 						STC3115_BatteryData.SOC * 0.1,
 						STC3115_BatteryData.Voltage, 
 						STC3115_BatteryData.Current, 
@@ -167,11 +169,13 @@ GasGauge_Restart:
 						STC3115_BatteryData.Temperature,
 						STC3115_BatteryData.Presence, 
 						STC3115_BatteryData.status >> 13, 
-						STC3115_BatteryData.ConvCounter);
+						STC3115_BatteryData.ConvCounter, 
+						STC3115_BatteryData.ConvCounter * 0.5 //elapsed time since gas gauge started
+						);
 				}
 				else if(status == 0) //only previous SOC, OCV and voltage are valid 
 				{
-					printf("Battery: Previous_SoC=%i, Vbat= %i mV, OCV=%i mV, T= %i °C \r\n", 
+					printf("Battery: Previous_SoC=%i, Vbat=%i mV, OCV=%i mV, T=%i °C \r\n", 
 						STC3115_BatteryData.SOC * 0.1,
 						STC3115_BatteryData.Voltage,
 						STC3115_BatteryData.OCV,

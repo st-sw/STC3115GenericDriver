@@ -833,7 +833,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   if (RAMData.reg.STC3115_Status == STC3115_INIT)
   {
     /* INIT state, wait for current & temperature value available: */
-    if (BatteryData->ConvCounter>VCOUNT) 
+    if (BatteryData->ConvCounter > VCOUNT) 
     {
         RAMData.reg.STC3115_Status = STC3115_RUNNING;
 		/*Battery is connected*/

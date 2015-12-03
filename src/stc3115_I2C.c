@@ -38,7 +38,7 @@
 * Description    : utility function to write several bytes to STC311x registers
 * Input          : NumberOfBytes, RegAddress, TxBuffer
 * Return         : error status
-* Note: I2C multiple write function is recommended to be used. If not available,
+* Note: I2C multiple-bytes write function is recommended to be used. If not available,
 * STC3115 registers have to be written by 2-byte words (unless NumberOfBytes=1).
 * Byte per byte write does not guaranty the data integrity.
 *******************************************************************************/
@@ -46,9 +46,9 @@ int I2C_Write(int NumberOfBytes, int RegAddress , unsigned char *TxBuffer)
 {
 	int res=-1;
     
-	/*TO DO: replace with application I2C multiple write function ... */
+	/* TO DO: replace with your application specific I2C multiple-bytes write function ... */
 
-	//res = My_I2C_Write(STC3115_SLAVE_ADDRESS,RegAddress,TxBuffer,NumberOfBytes);
+	//res = My_I2C_Write(STC3115_SLAVE_ADDRESS_7BIT,RegAddress,TxBuffer,NumberOfBytes);
 		
 	/*End of modification*/
 	
@@ -62,7 +62,7 @@ int I2C_Write(int NumberOfBytes, int RegAddress , unsigned char *TxBuffer)
 * Description    : utility function to read several bytes from STC311x registers
 * Input          : NumberOfBytes, RegAddress, , RxBuffer
 * Return         : error status
-* Note: I2C multiple read function is recommended to be used. If not available,
+* Note: I2C multiple-bytes read function is recommended to be used. If not available,
 * STC3115 registers have to be read by 2-byte words (unless NumberOfBytes=1).
 * Byte per byte read does not guaranty the data integrity.
 *******************************************************************************/
@@ -70,9 +70,9 @@ int I2C_Read(int NumberOfBytes, int RegAddress , unsigned char *RxBuffer)
 {
 	int res=-1;
   
-	/*TO DO: replace with application I2C multiple read function ... */
+	/* TO DO: replace with your application specific I2C multiple-bytes read function ... */
 	
-	//res = My_I2C_Read(STC3115_SLAVE_ADDRESS,RegAddress,RxBuffer,NumberOfBytes);
+	//res = My_I2C_Read(STC3115_SLAVE_ADDRESS_7BIT,RegAddress,RxBuffer,NumberOfBytes);
 
 	/*End of modification*/
 	

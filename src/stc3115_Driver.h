@@ -121,13 +121,18 @@ typedef struct  {
 static union {
   unsigned char db[RAM_SIZE];  /* last byte holds the CRC 						*/
   struct {
-    short int TestWord;     /* 0-1                                                 */
-    short int HRSOC;       /* 2-3 SOC backup in (1/512%)                        */
-    short int CC_cnf;      /* 4-5 current CC_cnf                                 */
-    short int VM_cnf;      /* 6-7 current VM_cnf                                 */
-    char SOC;              /* 8 SOC (in %)                                         */
-    char STC3115_State;   /* 9  STC3115 working state                            */
-    /* bytes ..RAM_SIZE-2 are free, last byte RAM_SIZE-1 is the CRC             */
+    short TestWord;       /* 0-1 RAM test word									*/
+    short HRSOC;          /* 2-3 SOC backup in (1/512%)							*/
+    short CC_cnf;         /* 4-5 current CC_cnf 								*/
+    short VM_cnf;         /* 6-7 current VM_cnf 								*/
+    char SOC;             /* 8  SOC (in %) 										*/
+	char STC3115_State;   /* 9  STC3115 working state							*/
+	char unused1;         /* 10  -Bytes upto ..RAM_SIZE-2 are free				*/
+	char unused2;         /* 11  -Bytes upto ..RAM_SIZE-2 are free				*/
+	char unused3;         /* 12  -Bytes upto ..RAM_SIZE-2 are free				*/
+	char unused4;         /* 13  -Bytes upto ..RAM_SIZE-2 are free				*/
+	char unused5;         /* 14  -Bytes upto ..RAM_SIZE-2 are free				*/
+	char CRC;             /* 15  last byte RAM_SIZE-1 is the CRC				*/
   } reg;
 } RAMData;
 

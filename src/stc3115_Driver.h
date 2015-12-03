@@ -77,7 +77,7 @@
 #define MIXED_MODE			0
 #define MAX_HRSOC          	51200  		/* 100% in 1/512% units								*/
 #define MAX_SOC            	1000   		/* 100% in 0.1% units 								*/
-#define OK 					0
+#define STC3115_OK 					0
 #define VoltageFactor  		9011      	/* LSB=2.20mV ~9011/4096 - convert to mV         	*/
 #define CurrentFactor		24084		/* LSB=5.88uV/R= ~24084/R/4096 - convert to mA  	*/
 
@@ -104,7 +104,7 @@
 
 /*battery output structure ---------------------------------------------------- */
 typedef struct  {
-  int status;			/* STC3115 status registers 							*/
+  int StatusWord;		/* STC3115 status registers 							*/
   int HRSOC;			/* battery relative SOC (%) in 1/512% 					*/
   int SOC;            	/* battery relative SOC (%) in 0.1% 					*/
   int Voltage;        	/* battery voltage in mV 								*/
@@ -121,13 +121,13 @@ typedef struct  {
 static union {
   unsigned char db[RAM_SIZE];  /* last byte holds the CRC 						*/
   struct {
-    short int TstWord;     /* 0-1 												*/
-    short int HRSOC;       /* 2-3 SOC backup in (1/512%)						*/
-    short int CC_cnf;      /* 4-5 current CC_cnf 								*/
-    short int VM_cnf;      /* 6-7 current VM_cnf 								*/
-    char SOC;              /* 8 SOC (in %) 										*/
-    char STC3115_State;   /* 9  STC3115 working state							*/
-    /* bytes ..RAM_SIZE-2 are free, last byte RAM_SIZE-1 is the CRC 			*/
+    short int TestWord;     /* 0-1                                                 */
+    short int HRSOC;       /* 2-3 SOC backup in (1/512%)                        */
+    short int CC_cnf;      /* 4-5 current CC_cnf                                 */
+    short int VM_cnf;      /* 6-7 current VM_cnf                                 */
+    char SOC;              /* 8 SOC (in %)                                         */
+    char STC3115_State;   /* 9  STC3115 working state                            */
+    /* bytes ..RAM_SIZE-2 are free, last byte RAM_SIZE-1 is the CRC             */
   } reg;
 } RAMData;
 
@@ -155,7 +155,7 @@ int STC3115_AlarmClear(void);
 int STC3115_AlarmSetVoltageThreshold(STC3115_ConfigData_TypeDef*, int);
 int STC3115_AlarmSetSOCThreshold(STC3115_ConfigData_TypeDef*, int);
 
-int STC3115_CheckDeviceId(void);
+int STC3115_CheckI2cDeviceId(void);
 unsigned int STC3115_GetRunningCounter(void);
 
 #ifdef __cplusplus	//c++

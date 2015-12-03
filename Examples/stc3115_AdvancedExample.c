@@ -42,7 +42,7 @@ GasGauge_Restart:
 
 	//----------------------------------------------------------------------
 	//Check I2C is working and Fuel gauge device connected
-	status = STC3115_CheckDeviceId();
+	status = STC3115_CheckI2cDeviceId();
 	if (status != 0) //error
 	{
 		if(status == -1)
@@ -168,7 +168,7 @@ GasGauge_Restart:
 						STC3115_BatteryData.ChargeValue,
 						STC3115_BatteryData.Temperature,
 						STC3115_BatteryData.Presence, 
-						STC3115_BatteryData.status >> 13, 
+						STC3115_BatteryData.StatusWord >> 13, 
 						STC3115_BatteryData.ConvCounter, 
 						STC3115_BatteryData.ConvCounter * 0.5 //elapsed time since gas gauge started
 						);

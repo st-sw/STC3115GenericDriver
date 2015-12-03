@@ -163,7 +163,7 @@ static int STC3115_ReadByte(int RegAddress)
 * Function Name  : STC3115_WriteByte
 * Description    : utility function to write a 8-bit value into a register
 * Input          : RegAddress: STC3115 register, Value: 8-bit value to write
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_WriteByte(int RegAddress, unsigned char Value)
 {
@@ -228,7 +228,7 @@ int STC3115_ReadUnsignedWord(unsigned int RegAddress, unsigned int * RegData)
 * Function Name  : STC3115_WriteWord
 * Description    : utility function to write a 16-bit value into a register pair
 * Input          : RegAddress: STC3115 register, Value: 16-bit value to write
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_WriteWord(int RegAddress, int Value)
 {
@@ -264,7 +264,7 @@ static int STC3115_ReadBytes(unsigned char *data,int RegAddress,int nbr)
 * Function Name  : STC3115_WriteWord
 * Description    : utility function to write a 16-bit value into a register pair
 * Input          : RegAddress: STC3115 register, Value: 16-bit value to write, nbr: number of bytes to write
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_WriteBytes(unsigned char *data,int RegAddress,int nbr)
 {
@@ -282,12 +282,12 @@ static int STC3115_WriteBytes(unsigned char *data,int RegAddress,int nbr)
 /* ---- Internal functions --------------------------------------------------- */
 
 /*******************************************************************************
-* Function Name  : STC3115_GetStatus
+* Function Name  : STC3115_GetStatusWord
 * Description    :  Read the STC3115 status
 * Input          : None
 * Return         : status word (16bit: REG_MODE and REG_CTRL), -1 if error
 *******************************************************************************/
-static int STC3115_GetStatus(void)
+static int STC3115_GetStatusWord(void)
 {
   int value;
 
@@ -303,12 +303,12 @@ static int STC3115_GetStatus(void)
 
 
 /*******************************************************************************
-* Function Name  : STC3115_CheckDeviceId
+* Function Name  : STC3115_CheckI2cDeviceId
 * Description    :  Read the hardcoded STC3115 ID number
 * Input          : pointer to char
 * Return         : status, -1 if error, -2 if bad ID
 *******************************************************************************/
-int STC3115_CheckDeviceId(void)
+int STC3115_CheckI2cDeviceId(void)
 {
   unsigned char RegAddress;
   unsigned char data8;
@@ -412,7 +412,7 @@ static int STC3115_Startup(STC3115_ConfigData_TypeDef *ConfigData)
   int ocv;
   
   /* check STC31xx status */
-  res = STC3115_GetStatus();
+  res = STC3115_GetStatusWord();
   if (res<0) return(res);
 
   /* read OCV */
@@ -438,12 +438,12 @@ static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
   int res;
 
   /* check STC31xx status */
-  res = STC3115_GetStatus();
+  res = STC3115_GetStatusWord();
   if (res<0) return(res);
  
   STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
 
-  /* restore last SOC from STC3115 embedded RAM data */
+  /* restore last SOC from STC3115 embedded RAM data for better accuracy */
   STC3115_WriteWord(STC3115_REG_SOC,RAMData.reg.HRSOC); //force a new SoC to the fuel gauge
 
   return(0);
@@ -456,7 +456,7 @@ static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
 * Function Name  : STC3115_Powerdown
 * Description    :  stop the STC3115 at application power down
 * Input          : None
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_Powerdown(void)
 {
@@ -467,9 +467,9 @@ static int STC3115_Powerdown(void)
 
   /* write 0 into the REG_MODE register to put the STC3115 in standby mode */
    res = STC3115_WriteByte(STC3115_REG_MODE, 0);
-   if (res!= OK) return (res);
+   if (res!= STC3115_OK) return (res);
 
-   return (OK);
+   return (STC3115_OK);
 }
 
 
@@ -498,7 +498,7 @@ static int STC3115_conv(short value, unsigned short factor)
 * Description    :  utility function to read the battery data from STC3115
 *                  to be called every 5s or so
 * Input          : ref to BatteryData structure
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_ReadBatteryData(STC3115_BatteryData_TypeDef *BatteryData)
 {
@@ -553,7 +553,7 @@ static int STC3115_ReadBatteryData(STC3115_BatteryData_TypeDef *BatteryData)
 //  BatteryData->RelaxTimer = data[0];
 
   
-  return(OK);
+  return(STC3115_OK);
 }
 
 
@@ -561,7 +561,7 @@ static int STC3115_ReadBatteryData(STC3115_BatteryData_TypeDef *BatteryData)
 * Function Name  : STC3115_ReadRamData
 * Description    : utility function to read the internal RAM data from STC3115
 * Input          : ref to RAM data array
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_ReadRamData(unsigned char *RamData)
 {
@@ -572,7 +572,7 @@ static int STC3115_ReadRamData(unsigned char *RamData)
 * Function Name  : STC3115_WriteRamData
 * Description    : utility function to write the RAM data into STC3115
 * Input          : ref to RAM data array
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 static int STC3115_WriteRamData(unsigned char *RamData)
 {
@@ -633,7 +633,7 @@ static void STC3115_InitRamData(STC3115_ConfigData_TypeDef *ConfigData)
     RAMData.db[index]=0;
   
   //Fill RAM regs
-  RAMData.reg.TstWord=RAM_TESTWORD;  /* Fixed word to check RAM integrity */
+  RAMData.reg.TestWord=RAM_TESTWORD;  /* Fixed word to check RAM integrity */
   RAMData.reg.CC_cnf = ConfigData->CC_cnf;
   RAMData.reg.VM_cnf = ConfigData->VM_cnf;
   
@@ -653,7 +653,7 @@ static void STC3115_InitRamData(STC3115_ConfigData_TypeDef *ConfigData)
 * Return         : 0 is ok, -1 if STC3115 not found or I2C error
 * Affect         : Initializes ConfigData and returns battery early status in BatteryData
 *******************************************************************************/
-int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_TypeDef *BatteryData)
+int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_BatteryData_TypeDef *BatteryData)
 {
   int res, loop;
   int OCVOffset[16] = OCV_OFFSET_TAB;
@@ -691,15 +691,25 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_Batte
 
   /* check RAM data validity */
   {
+	// ** Internal RAM purpose: **
+	// The STC3115 device embeds a 16-byte RAM memory area.
+	// The registers of this area can be used to periodically save the battery status. 
+	// This allows battery information to be recovered when the application is stopped but the battery is not unplugged.
+	//
+	// Typical use case of STC3115 Restoration is:
+	// User Platform power down (but stc3115 set in standby mode), no battery removal, and then Platform power up (stc3115 set in running mode). So Battery state context can be restored. 
+	// If the battery is removed or in case of soft reset (STC3115 soft reset), RAM content is reset, the SOC tracking will restart from “zero” (not use the RAM content). So there is no restoration in this condition.
+
 	  STC3115_ReadRamData(RAMData.db);
  
-	  if ( (RAMData.reg.TstWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
+	  if ( (RAMData.reg.TestWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
 	  {
-		/* RAM not initialized by this Driver (no TESTWORD), or RAM invalid (bad CRC) */
+		// Fuel gauge first power-up: RAM is null or RAM not yet initialized by this Driver (no TESTWORD)
+		//or RAM invalid/corrupted (bad CRC) */
 		STC3115_InitRamData(ConfigData);
 		res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
 	  }
-	  else //RAM valid
+	  else //RAM valid (ie initialization process started again)
 	  {
 		  /* check STC3115 status */
 		  if ( (STC3115_ReadByte(STC3115_REG_CTRL) & (STC3115_BATFAIL | STC3115_PORDET)) != 0 )
@@ -709,9 +719,10 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_Batte
 
 				res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
 		  }
-		  else //no specific event occured, restore the latest SoC value for better accuracy
+		  else //no specific event occured, restore the latest good SoC value for better accuracy
 		  {
-			res=STC3115_Restore(ConfigData); /* recover from last SOC */
+
+				res=STC3115_Restore(ConfigData); /* recover from last SOC */
 		  }
 	  }
   }
@@ -735,10 +746,10 @@ int GasGauge_Reset(void)
   int res;
 
   /* reset RAM */
-  RAMData.reg.TstWord=0;  
+  RAMData.reg.TestWord=0;  
   RAMData.reg.STC3115_State = STC3115_UNINIT;
   res = STC3115_WriteRamData(RAMData.db);
-  if(res != OK) return res;
+  if(res != STC3115_OK) return res;
   
   /* reset STC3115*/
   res = STC3115_WriteByte(STC3115_REG_CTRL, STC3115_PORDET);  /*   set Soft Reset */
@@ -788,14 +799,14 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 
   /* ----------------------------- System state verification ---------------------------- */
   /*Read STC3115 status registers */
-  res=STC3115_GetStatus();
+  res=STC3115_GetStatusWord();
 
   if (res<0) return(res);  /* return if I2C error or STC3115 not responding */  
-  BatteryData->status = res;
+  BatteryData->StatusWord = res;
   
   /* check STC3115 RAM status (battery has not been changed) */
   STC3115_ReadRamData(RAMData.db);
-  if ( (RAMData.reg.TstWord!= RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
+  if ( (RAMData.reg.TestWord!= RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
   {
     /* if RAM non ok, reset it and set init state */
     STC3115_InitRamData(ConfigData); 
@@ -803,7 +814,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   }  
   
   /* check battery presence status */
-  if ((BatteryData->status & ((int)STC3115_BATFAIL<<8)) != 0)
+  if ((BatteryData->StatusWord & ((int)STC3115_BATFAIL<<8)) != 0)
   {
     /*Battery disconnection has been detected			*/
 		
@@ -817,13 +828,13 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   }
 	
   /* check STC3115 running mode*/
-  if ((BatteryData->status & STC3115_GG_RUN) == 0)
+  if ((BatteryData->StatusWord & STC3115_GG_RUN) == 0)
   {
 		if( (RAMData.reg.STC3115_State == STC3115_RUNNING) ||
 			(RAMData.reg.STC3115_State == STC3115_POWERDN)
 			)
 		{
-			STC3115_Restore(ConfigData);  /* if RUNNING state, restore STC3115*/
+			STC3115_Restore(ConfigData);  /* if RUNNING state, restore STC3115 with latest good SoC value for better accuracy */
 		}
 		else
 		{
@@ -873,11 +884,11 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 	/* Battery charge value calculation */
 	BatteryData->ChargeValue = ConfigData->Cnom * BatteryData->SOC / MAX_SOC;
 
-	if ((BatteryData->status & STC3115_VMODE) == 0) /* mixed mode only*/
+	if ((BatteryData->StatusWord & STC3115_VMODE) == 0) /* mixed mode only*/
 	{  
 		
 		/*Lately fully compensation*/
-		if ((BatteryData->status & STC3115_VMODE) == 0) /*running in mixed mode*/
+		if ((BatteryData->StatusWord & STC3115_VMODE) == 0) /*running in mixed mode*/
 		{ 
 			
 			if(BatteryData->Current > APP_EOC_CURRENT && BatteryData->SOC > 990)
@@ -928,7 +939,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 * Function Name  : STC3115_SetPowerSavingMode
 * Description    : Set the power saving mode
 * Input          : None
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_SetPowerSavingMode(void)
 {
@@ -939,9 +950,9 @@ int STC3115_SetPowerSavingMode(void)
 
   /* Set the VMODE bit to 1 */
   res = STC3115_WriteByte(STC3115_REG_MODE, (res | STC3115_VMODE));
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
 
-   return (OK);
+   return (STC3115_OK);
 }
 
 
@@ -949,7 +960,7 @@ int STC3115_SetPowerSavingMode(void)
 * Function Name  : STC3115_StopPowerSavingMode
 * Description    : Stop the power saving mode
 * Input          : None
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_StopPowerSavingMode(void)
 {
@@ -960,13 +971,13 @@ int STC3115_StopPowerSavingMode(void)
 
   /*STC3115 is in power saving mode by default, cannot be set dynamically in mixed mode.		*/
   /*Change stc3115_Driver.h VMODE parameter, and connect an external sense resistor to STC3115	*/
-  if (VMODE != MIXED_MODE) return (!OK); 
+  if (VMODE != MIXED_MODE) return (!STC3115_OK); 
   
   /* Set the VMODE bit to 0 */
   res = STC3115_WriteByte(STC3115_REG_MODE, (res & ~STC3115_VMODE));
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
 
-   return (OK);
+   return (STC3115_OK);
 }
 
 
@@ -974,7 +985,7 @@ int STC3115_StopPowerSavingMode(void)
 * Function Name  : STC3115_AlarmSet
 * Description    : Set the alarm function
 * Input          : None
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_AlarmSet(void)
 {
@@ -985,9 +996,9 @@ int STC3115_AlarmSet(void)
 
   /* Set the ALM_ENA bit to 1 */
   res = STC3115_WriteByte(STC3115_REG_MODE, (res | STC3115_ALM_ENA));
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
 
-  return (OK);
+  return (STC3115_OK);
 }
 
 
@@ -995,7 +1006,7 @@ int STC3115_AlarmSet(void)
 * Function Name  : STC3115_AlarmStop
 * Description    : Stop the alarm function
 * Input          : None
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_AlarmStop(void)
 {
@@ -1006,9 +1017,9 @@ int STC3115_AlarmStop(void)
 
   /* Set the ALM_ENA bit to 0 */
   res = STC3115_WriteByte(STC3115_REG_MODE, (res & ~STC3115_ALM_ENA));
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
 
-   return (OK);
+   return (STC3115_OK);
 }
 
 
@@ -1039,7 +1050,7 @@ int STC3115_AlarmGet(void)
 * Function Name  : STC3115_AlarmClear
 * Description    : Clear the alarm signal
 * Input          : None
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_AlarmClear(void)
 {
@@ -1047,7 +1058,7 @@ int STC3115_AlarmClear(void)
   
   /* clear ALM bits*/
   res = STC3115_WriteByte(STC3115_REG_CTRL, 0x01);
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
 
   return (res);
 }
@@ -1057,7 +1068,7 @@ int STC3115_AlarmClear(void)
 * Function Name  : STC3115_AlarmSetVoltageThreshold
 * Description    : Set the alarm threshold
 * Input          : int voltage threshold in mV
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_AlarmSetVoltageThreshold(STC3115_ConfigData_TypeDef *ConfigData, int VoltThresh)
 {
@@ -1068,9 +1079,9 @@ int STC3115_AlarmSetVoltageThreshold(STC3115_ConfigData_TypeDef *ConfigData, int
     
   value= ((long)(ConfigData->Alm_Vbat << 9) / VoltageFactor); /* LSB=8*2.2mV */
   res = STC3115_WriteByte(STC3115_REG_ALARM_VOLTAGE, value);
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
 
-   return (OK);
+   return (STC3115_OK);
 }
 
 
@@ -1078,7 +1089,7 @@ int STC3115_AlarmSetVoltageThreshold(STC3115_ConfigData_TypeDef *ConfigData, int
 * Function Name  : STC3115_AlarmSetSOCThreshold
 * Description    : Set the alarm threshold
 * Input          : int voltage threshold in %
-* Return         : error status (OK, !OK)
+* Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
 int STC3115_AlarmSetSOCThreshold(STC3115_ConfigData_TypeDef *ConfigData, int SOCThresh)
 {
@@ -1086,9 +1097,9 @@ int STC3115_AlarmSetSOCThreshold(STC3115_ConfigData_TypeDef *ConfigData, int SOC
 
   ConfigData->Alm_SOC = SOCThresh;
   res = STC3115_WriteByte(STC3115_REG_ALARM_SOC, ConfigData->Alm_SOC*2);
-  if (res!= OK) return (res);
+  if (res!= STC3115_OK) return (res);
   
-  return (OK);
+  return (STC3115_OK);
 }
 
 /* ---- End of driver interface functions ------------------------------------------ */

@@ -45,7 +45,7 @@ int main1(void)
 				STC3115_BatteryData.SOC, 
 				STC3115_BatteryData.ChargeValue, 
 				STC3115_BatteryData.Presence, 
-				STC3115_BatteryData.status >> 13, 
+				STC3115_BatteryData.StatusWord >> 13, 
 				STC3115_BatteryData.ConvCounter); 
 			i=0; 
 		} 

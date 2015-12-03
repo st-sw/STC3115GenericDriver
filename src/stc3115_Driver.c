@@ -819,9 +819,12 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   /* check STC3115 running mode*/
   if ((BatteryData->status & STC3115_GG_RUN) == 0)
   {
-
-		if(RAMData.reg.STC3115_State == (STC3115_RUNNING | STC3115_POWERDN)) 
+		if( (RAMData.reg.STC3115_State == STC3115_RUNNING) ||
+			(RAMData.reg.STC3115_State == STC3115_POWERDN)
+			)
+		{
 			STC3115_Restore(ConfigData);  /* if RUNNING state, restore STC3115*/
+		}
 		else
 		{
 			STC3115_Startup(ConfigData);  /* if INIT state, initialize STC3115*/

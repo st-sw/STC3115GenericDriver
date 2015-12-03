@@ -282,12 +282,12 @@ static int STC3115_WriteBytes(unsigned char *data,int RegAddress,int nbr)
 /* ---- Internal functions --------------------------------------------------- */
 
 /*******************************************************************************
-* Function Name  : STC3115_Status
+* Function Name  : STC3115_GetStatus
 * Description    :  Read the STC3115 status
 * Input          : None
-* Return         : status word (REG_MODE / REG_CTRL), -1 if error
+* Return         : status word (16bit: REG_MODE and REG_CTRL), -1 if error
 *******************************************************************************/
-static int STC3115_Status(void)
+static int STC3115_GetStatus(void)
 {
   int value;
 
@@ -357,12 +357,12 @@ unsigned int STC3115_GetRunningCounter(void)
 }
 
 /*******************************************************************************
-* Function Name  : STC3115_SetParam
-* Description    :  initialize the STC3115 parameters
+* Function Name  : STC3115_SetParamAndRun
+* Description    :  initialize the STC3115 parameters and Start the device to monitor the battery
 * Input          : rst: init algo param
 * Return         : 0
 *******************************************************************************/
-static void STC3115_SetParam(STC3115_ConfigData_TypeDef *ConfigData)
+static void STC3115_SetParamAndRun(STC3115_ConfigData_TypeDef *ConfigData)
 {
   int value;
   
@@ -395,7 +395,6 @@ static void STC3115_SetParam(STC3115_ConfigData_TypeDef *ConfigData)
   STC3115_WriteByte(STC3115_REG_CTRL,0x03);  /*   clear PORDET, BATFAIL, free ALM pin, reset conv counter */
   STC3115_WriteByte(STC3115_REG_MODE, STC3115_GG_RUN | (STC3115_VMODE * ConfigData->Vmode) | (STC3115_ALM_ENA * ALM_EN));  /*   set GG_RUN=1, set mode, set alm enable */
  
-  return;
 }  
 
 
@@ -412,14 +411,14 @@ static int STC3115_Startup(STC3115_ConfigData_TypeDef *ConfigData)
   int res;
   int ocv;
   
-  /* check STC310x status */
-  res = STC3115_Status();
+  /* check STC31xx status */
+  res = STC3115_GetStatus();
   if (res<0) return(res);
 
   /* read OCV */
   ocv=STC3115_ReadWord(STC3115_REG_OCV);
 
-  STC3115_SetParam(ConfigData);  /* set STC3115 parameters  */
+  STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
   
   /* rewrite ocv to start SOC with updated OCV curve */
   STC3115_WriteWord(STC3115_REG_OCV,ocv);
@@ -430,7 +429,7 @@ static int STC3115_Startup(STC3115_ConfigData_TypeDef *ConfigData)
 
 /*******************************************************************************
 * Function Name  : STC3115_Restore
-* Description    :  Restore STC3115 state
+* Description    :  Restore STC3115 previous state
 * Input          : None
 * Return         : 
 *******************************************************************************/
@@ -438,14 +437,14 @@ static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
 {
   int res;
 
-  /* check STC310x status */
-  res = STC3115_Status();
+  /* check STC31xx status */
+  res = STC3115_GetStatus();
   if (res<0) return(res);
  
-  STC3115_SetParam(ConfigData);  /* set STC3115 parameters  */
+  STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
 
-  /* restore SOC from RAM data */
-  STC3115_WriteWord(STC3115_REG_SOC,RAMData.reg.HRSOC);
+  /* restore last SOC from STC3115 embedded RAM data */
+  STC3115_WriteWord(STC3115_REG_SOC,RAMData.reg.HRSOC); //force a new SoC to the fuel gauge
 
   return(0);
 }
@@ -560,7 +559,7 @@ static int STC3115_ReadBatteryData(STC3115_BatteryData_TypeDef *BatteryData)
 
 /*******************************************************************************
 * Function Name  : STC3115_ReadRamData
-* Description    : utility function to read the RAM data from STC3115
+* Description    : utility function to read the internal RAM data from STC3115
 * Input          : ref to RAM data array
 * Return         : error status (OK, !OK)
 *******************************************************************************/
@@ -628,13 +627,16 @@ static int STC3115_UpdateRamCRC(void)
 static void STC3115_InitRamData(STC3115_ConfigData_TypeDef *ConfigData)
 {
   int index;
+
   //Set full RAM tab to 0
   for (index=0;index<RAM_SIZE;index++) 
     RAMData.db[index]=0;
+  
   //Fill RAM regs
-  RAMData.reg.TstWord=RAM_TSTWORD;  /* Fixed word to check RAM integrity */
+  RAMData.reg.TstWord=RAM_TESTWORD;  /* Fixed word to check RAM integrity */
   RAMData.reg.CC_cnf = ConfigData->CC_cnf;
   RAMData.reg.VM_cnf = ConfigData->VM_cnf;
+  
   /* update the crc */
   STC3115_UpdateRamCRC();
 }
@@ -653,7 +655,7 @@ static void STC3115_InitRamData(STC3115_ConfigData_TypeDef *ConfigData)
 *******************************************************************************/
 int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_TypeDef *BatteryData)
 {
-  int res,loop;
+  int res, loop;
   int OCVOffset[16] = OCV_OFFSET_TAB;
 
   /*** Fill configuration structure parameters ***/
@@ -663,10 +665,10 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_Batte
   if(RSENSE!=0)	ConfigData->Rsense = RSENSE;
   else ConfigData->Rsense = 10; // default value to avoid division by 0
   
-  ConfigData->CC_cnf = (CAPACITY * ConfigData->Rsense * 250 + 6194) / 12389;
+  ConfigData->CC_cnf = (BATT_CAPACITY * ConfigData->Rsense * 250 + 6194) / 12389;
 	
-  if(RINT!=0)	ConfigData->VM_cnf = (CAPACITY * RINT * 50 + 24444) / 48889;
-  else ConfigData->VM_cnf = (CAPACITY * 200 * 50 + 24444) / 48889; // default value
+  if(BATT_RINT!=0)	ConfigData->VM_cnf = (BATT_CAPACITY * BATT_RINT * 50 + 24444) / 48889;
+  else ConfigData->VM_cnf = (BATT_CAPACITY * 200 * 50 + 24444) / 48889; // default value
 
   for(loop=0;loop<16;loop++)
   {
@@ -675,8 +677,8 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_Batte
 	 ConfigData->OCVOffset[loop] = OCVOffset[loop];
   }
 	
-  ConfigData->Cnom = CAPACITY; 
-  ConfigData->RelaxCurrent = CAPACITY / 20;
+  ConfigData->Cnom = BATT_CAPACITY; 
+  ConfigData->RelaxCurrent = BATT_CAPACITY / 20;
   
   ConfigData->Alm_SOC = ALM_SOC;
   ConfigData->Alm_Vbat = ALM_VBAT;
@@ -685,35 +687,39 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData,STC3115_Batte
   /*** Initialize Gas Gauge system ***/
   
   /*Battery presence status init*/
-  BatteryData->Presence = 1;	
+  BatteryData->Presence = 1;
 
   /* check RAM data validity */
-  STC3115_ReadRamData(RAMData.db);
+  {
+	  STC3115_ReadRamData(RAMData.db);
  
-  if ( (RAMData.reg.TstWord != RAM_TSTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
-  {
-    /* RAM invalid */
-    STC3115_InitRamData(ConfigData);
-    res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
-  }
-  else
-  {
-	
-      /* check STC3115 status */
-      if ( (STC3115_ReadByte(STC3115_REG_CTRL) & (STC3115_BATFAIL | STC3115_PORDET)) != 0 )
-      {
+	  if ( (RAMData.reg.TstWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
+	  {
+		/* RAM not initialized by this Driver (no TESTWORD), or RAM invalid (bad CRC) */
+		STC3115_InitRamData(ConfigData);
+		res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
+	  }
+	  else //RAM valid
+	  {
+		  /* check STC3115 status */
+		  if ( (STC3115_ReadByte(STC3115_REG_CTRL) & (STC3115_BATFAIL | STC3115_PORDET)) != 0 )
+		  {
+				//PORDET detected (Power On Reset occurred after Device powered-On or a Soft-reset)
+				//or Error occured: BATFAIL (battery disconnected or Undervoltage UVLO)
+
 				res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
-      }
-      else
-      {
-        res=STC3115_Restore(ConfigData); /* recover from last SOC */
-      }
+		  }
+		  else //no specific event occured, restore the latest SoC value for better accuracy
+		  {
+			res=STC3115_Restore(ConfigData); /* recover from last SOC */
+		  }
+	  }
   }
 
-  //Update RAM status
-  RAMData.reg.STC3115_Status = STC3115_INIT;
-  STC3115_UpdateRamCRC();
-  STC3115_WriteRamData(RAMData.db);
+	//Update RAM state flag to INIT state
+	RAMData.reg.STC3115_State = STC3115_INIT;
+	STC3115_UpdateRamCRC();
+	STC3115_WriteRamData(RAMData.db);
   
   return(res);    /* return -1 if I2C error or STC3115 not present */
 }
@@ -730,11 +736,12 @@ int GasGauge_Reset(void)
 
   /* reset RAM */
   RAMData.reg.TstWord=0;  
-  RAMData.reg.STC3115_Status = 0;
+  RAMData.reg.STC3115_State = STC3115_UNINIT;
   res = STC3115_WriteRamData(RAMData.db);
   if(res != OK) return res;
+  
   /* reset STC3115*/
-  res = STC3115_WriteByte(STC3115_REG_CTRL, STC3115_PORDET);  /*   set soft POR */
+  res = STC3115_WriteByte(STC3115_REG_CTRL, STC3115_PORDET);  /*   set Soft Reset */
 
   return res;
 }
@@ -753,7 +760,8 @@ int GasGauge_Stop(void)
   
   /*Save context in RAM*/
   STC3115_ReadRamData(RAMData.db);
-  RAMData.reg.STC3115_Status= STC3115_POWERDN;
+  RAMData.reg.STC3115_State= STC3115_POWERDN;
+  
   /* update the crc */
   STC3115_UpdateRamCRC();
   STC3115_WriteRamData(RAMData.db);
@@ -780,18 +788,18 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 
   /* ----------------------------- System state verification ---------------------------- */
   /*Read STC3115 status registers */
-  res=STC3115_Status();
+  res=STC3115_GetStatus();
 
   if (res<0) return(res);  /* return if I2C error or STC3115 not responding */  
   BatteryData->status = res;
   
   /* check STC3115 RAM status (battery has not been changed) */
   STC3115_ReadRamData(RAMData.db);
-  if ( (RAMData.reg.TstWord!= RAM_TSTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
+  if ( (RAMData.reg.TstWord!= RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
   {
     /* if RAM non ok, reset it and set init state */
     STC3115_InitRamData(ConfigData); 
-    RAMData.reg.STC3115_Status = STC3115_INIT;
+    RAMData.reg.STC3115_State = STC3115_INIT;
   }  
   
   /* check battery presence status */
@@ -811,15 +819,15 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   /* check STC3115 running mode*/
   if ((BatteryData->status & STC3115_GG_RUN) == 0)
   {
-    
-		if(RAMData.reg.STC3115_Status == (STC3115_RUNNING | STC3115_POWERDN)) 
+
+		if(RAMData.reg.STC3115_State == (STC3115_RUNNING | STC3115_POWERDN)) 
 			STC3115_Restore(ConfigData);  /* if RUNNING state, restore STC3115*/
 		else
 		{
 			STC3115_Startup(ConfigData);  /* if INIT state, initialize STC3115*/
 		}
 		
-    RAMData.reg.STC3115_Status = STC3115_INIT;
+    RAMData.reg.STC3115_State = STC3115_INIT;
   }
   
   /* --------------------------------- Read battery data ------------------------------- */
@@ -830,18 +838,18 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   
   /* ------------------------------- battery data report ------------------------------- */
   /* check INIT state */
-  if (RAMData.reg.STC3115_Status == STC3115_INIT)
+  if (RAMData.reg.STC3115_State == STC3115_INIT)
   {
     /* INIT state, wait for current & temperature value available: */
     if (BatteryData->ConvCounter > VCOUNT) 
     {
-        RAMData.reg.STC3115_Status = STC3115_RUNNING;
+        RAMData.reg.STC3115_State = STC3115_RUNNING;
 		/*Battery is connected*/
 		BatteryData->Presence = 1;
     }
   }
 
-  if (RAMData.reg.STC3115_Status != STC3115_RUNNING) /* not running : data partially availalble*/
+  if (RAMData.reg.STC3115_State != STC3115_RUNNING) /* not running : data partially availalble*/
   {
   	BatteryData->ChargeValue = ConfigData->Cnom * BatteryData->SOC / MAX_SOC;
     BatteryData->Current=0;
@@ -872,7 +880,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 			if(BatteryData->Current > APP_EOC_CURRENT && BatteryData->SOC > 990)
 			{
 				BatteryData->SOC = 990;
-				STC3115_WriteWord(STC3115_REG_SOC,50688);   /* 99% */
+				STC3115_WriteWord(STC3115_REG_SOC,50688);   /* 99% */  //force a new SoC displayed by fuel gauge
 			}
 		}
 		
@@ -905,7 +913,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   STC3115_UpdateRamCRC();
   STC3115_WriteRamData(RAMData.db);
 
-  if (RAMData.reg.STC3115_Status==STC3115_RUNNING)
+  if (RAMData.reg.STC3115_State==STC3115_RUNNING)
     return(1);
   else
     return(0);  /* only SOC, OCV and voltage are valid */

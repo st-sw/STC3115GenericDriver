@@ -30,7 +30,7 @@ int main(void)
 	STC3115_BatteryData_TypeDef STC3115_BatteryData; 
 
 	int status;
-	volatile char HardwareShutDown = 0; //Optional: set to 1 when the user power down the hardware, and no need to monitor the battery
+	volatile char GasGauge_HardwareShutDown = 0; //Optional: set to 1 when the user power down the hardware, and no need to monitor the battery
 	volatile char GasGauge_UnknowError = 0; //Optional: set to 1 by the application when unknow gas gauge error occurs
 	volatile char GasGauge_ChangeLowPowerMode = 0; //Optional: set to 1 by the application when need to decrease the gas gauge power consumption (ie. switch to voltage mode only monitoring)
 	unsigned int CounterValue;
@@ -64,7 +64,7 @@ GasGauge_Restart:
 
 
 	//----------------------------------------------------------------------
-	//Check Gasgauge is powered up & ready (wait CounterValue is 3 or more)
+	//Check Gasgauge is powered up & ready, and first measurement (V, I) is done (ie wait CounterValue is 3 or more)
 
 	for(i=0; i<20; i++)
 	{
@@ -125,9 +125,9 @@ GasGauge_Restart:
 	//----------------------------------------------------------------------
 	while(1) //main infinite loop
 	{
-		if(HardwareShutDown == 1) //Completely shutdown the platform and the Gas gauge. (not recommended, it is better ot let the Gas Gauge running, connected to battery)
+		if(GasGauge_HardwareShutDown == 1) //Completely shutdown the platform and the Gas gauge. (not recommended, it is better ot let the Gas Gauge running, connected to battery)
 		{
-			HardwareShutDown = 0;
+			GasGauge_HardwareShutDown = 0;
 			status = GasGauge_Stop(); //stop the Gas gauge but keep its RAM content
 			if(status != 0) printf("STC3115: Error in GasGauge_Stop\n");
 
@@ -192,7 +192,7 @@ GasGauge_Restart:
 						printf("STC3115: I2C failure \r\n");
 					}
 				}
-			} // End Timer finished
+			} // END Timer finished
 			else
 			{
 				//Do other Tasks here ...
@@ -243,8 +243,10 @@ static int GasGaugeTimerFinished(void)
 }
 
 
-static void Delay_ms(unsigned int value)
+static void Delay_ms(unsigned int value) 
 {
+	//quick and dirty delay function implementation
+
 	unsigned int i,j;
 	volatile int dummy = 0;
 

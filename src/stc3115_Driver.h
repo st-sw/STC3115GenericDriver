@@ -81,7 +81,8 @@
 #define VoltageFactor  		9011      	/* LSB=2.20mV ~9011/4096 - convert to mV         	*/
 #define CurrentFactor		24084		/* LSB=5.88uV/R= ~24084/R/4096 - convert to mA  	*/
 
-#define RAM_TSTWORD 		0x53A9		/* STC3115 RAM test word 							*/
+#define RAM_TESTWORD 		0x53A9		/* STC3115 RAM test word 							*/
+#define STC3115_UNINIT    0             /* Gas gauge Not Initialiezd state 							*/
 #define STC3115_INIT     'I'			/* Gas gauge Init states 							*/
 #define STC3115_RUNNING  'R'			/* Gas gauge Running states 						*/
 #define STC3115_POWERDN  'D'			/* Gas gauge Stop states 							*/
@@ -125,7 +126,7 @@ static union {
     short int CC_cnf;      /* 4-5 current CC_cnf 								*/
     short int VM_cnf;      /* 6-7 current VM_cnf 								*/
     char SOC;              /* 8 SOC (in %) 										*/
-    char STC3115_Status;   /* 9  STC3115 working state							*/
+    char STC3115_State;   /* 9  STC3115 working state							*/
     /* bytes ..RAM_SIZE-2 are free, last byte RAM_SIZE-1 is the CRC 			*/
   } reg;
 } RAMData;

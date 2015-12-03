@@ -370,7 +370,7 @@ static void STC3115_SetParamAndRun(STC3115_ConfigData_TypeDef *ConfigData)
   STC3115_WriteByte(STC3115_REG_MODE,STC3115_VMODE);
   
   /* init OCV curve */
-	STC3115_WriteBytes((unsigned char*) ConfigData->OCVOffset, STC3115_REG_OCVTAB, OCVTAB_SIZE);
+	STC3115_WriteBytes((unsigned char*) ConfigData->OCVOffset, STC3115_REG_OCVTAB, STC3115_OCVTAB_SIZE);
   
   /* set alm level if different from default */
   if (ConfigData->Alm_SOC !=0 )   
@@ -565,7 +565,7 @@ static int STC3115_ReadBatteryData(STC3115_BatteryData_TypeDef *BatteryData)
 *******************************************************************************/
 static int STC3115_ReadRamData(unsigned char *RamData)
 {
-	return STC3115_ReadBytes(RamData, STC3115_REG_RAM, RAM_SIZE);
+	return STC3115_ReadBytes(RamData, STC3115_REG_RAM, STC3115_RAM_SIZE);
 }
 
 /*******************************************************************************
@@ -576,7 +576,7 @@ static int STC3115_ReadRamData(unsigned char *RamData)
 *******************************************************************************/
 static int STC3115_WriteRamData(unsigned char *RamData)
 {
-	return STC3115_WriteBytes(RamData, STC3115_REG_RAM, RAM_SIZE);
+	return STC3115_WriteBytes(RamData, STC3115_REG_RAM, STC3115_RAM_SIZE);
 }
 
 /*******************************************************************************
@@ -613,8 +613,8 @@ static int STC3115_UpdateRamCRC(void)
 {
   int res;
   
-  res=STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE-1);
-  RAMData.db[RAM_SIZE-1] = res;   /* last byte holds the CRC */
+  res=STC3115_CalcRamCRC8(RAMData.db,STC3115_RAM_SIZE-1);
+  RAMData.db[STC3115_RAM_SIZE-1] = res;   /* last byte holds the CRC */
   return(res);
 }
 
@@ -629,7 +629,7 @@ static void STC3115_InitRamData(STC3115_ConfigData_TypeDef *ConfigData)
   int index;
 
   //Set full RAM tab to 0
-  for (index=0;index<RAM_SIZE;index++) 
+  for (index=0;index<STC3115_RAM_SIZE;index++) 
     RAMData.db[index]=0;
   
   //Fill RAM regs
@@ -702,7 +702,7 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 
 	  STC3115_ReadRamData(RAMData.db);
  
-	  if ( (RAMData.reg.TestWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
+	  if ( (RAMData.reg.TestWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,STC3115_RAM_SIZE)!=0) )
 	  {
 		// Fuel gauge first power-up: RAM is null or RAM not yet initialized by this Driver (no TESTWORD)
 		//or RAM invalid/corrupted (bad CRC) */
@@ -806,7 +806,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   
   /* check STC3115 RAM status (battery has not been changed) */
   STC3115_ReadRamData(RAMData.db);
-  if ( (RAMData.reg.TestWord!= RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,RAM_SIZE)!=0) )
+  if ( (RAMData.reg.TestWord!= RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,STC3115_RAM_SIZE)!=0) )
   {
     /* if RAM non ok, reset it and set init state */
     STC3115_InitRamData(ConfigData); 

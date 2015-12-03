@@ -38,14 +38,14 @@
 #define STC3115_REG_VM_ADJ_HIGH          0x0C    /* VM adjustement     					*/
 #define STC3115_REG_VM_ADJ_LOW           0x1A    /* VM adjustement     					*/
 #define STC3115_REG_OCV                  0x0D    /* Battery OCV (2 bytes) 				*/
-#define STC3115_REG_CC_CNF               0x0F    /* CC configuration (2 bytes)    		*/
-#define STC3115_REG_VM_CNF               0x11    /* VM configuration (2 bytes)    		*/
+#define STC3115_REG_CC_CNF               0x0F    /* Coulomb Counter CC configuration (2 bytes) */
+#define STC3115_REG_VM_CNF               0x11    /* Voltage Mode VM configuration (2 bytes)    */
 #define STC3115_REG_ALARM_SOC            0x13    /* SOC alarm level         			*/
 #define STC3115_REG_ALARM_VOLTAGE        0x14    /* Low voltage alarm level 			*/
 #define STC3115_REG_CURRENT_THRES        0x15    /* Current threshold for relaxation 	*/
 #define STC3115_REG_RELAX_COUNT          0x16    /* Voltage relaxation counter   		*/
 #define STC3115_REG_RELAX_MAX            0x17    /* Voltage relaxation max count 		*/
-#define STC3115_REG_ID									 0x18
+#define STC3115_REG_ID					 0x18
 #define STC3115_REG_RAM     			 0x20    /* General Purpose RAM Registers 		*/
 #define STC3115_REG_OCVTAB               0x30	 /* OCV OFFSET table registers			*/
 
@@ -69,12 +69,12 @@
 
 /*STC3115 General purpose define ---------------------------------------------------------- */
 #define STC3115_ID          0x14    	/* STC3115 ID 										*/
-#define RAM_SIZE            16      	/* Total RAM size of STC3115 in bytes 				*/
-#define OCVTAB_SIZE         16      	/* OCVTAB size of STC3115 in bytes 					*/
+#define STC3115_RAM_SIZE    16      	/* Total RAM size of STC3115 in bytes 				*/
+#define STC3115_OCVTAB_SIZE 16      	/* OCVTAB size of STC3115 in bytes 					*/
 #define VCOUNT				4       	/* counter value for 1st current/temp measurements	*/
-#define VM_MODE 			1
-#define CC_MODE 			0
-#define MIXED_MODE			0
+#define VM_MODE 			1           // Voltage Mode
+#define CC_MODE 			0           // Coulomb Counter Mode
+#define MIXED_MODE			0			// Mixed Mode (Voltage + Current)
 #define MAX_HRSOC          	51200  		/* 100% in 1/512% units								*/
 #define MAX_SOC            	1000   		/* 100% in 0.1% units 								*/
 #define STC3115_OK 					0
@@ -82,7 +82,7 @@
 #define CurrentFactor		24084		/* LSB=5.88uV/R= ~24084/R/4096 - convert to mA  	*/
 
 #define RAM_TESTWORD 		0x53A9		/* STC3115 RAM test word 							*/
-#define STC3115_UNINIT    0             /* Gas gauge Not Initialiezd state 							*/
+#define STC3115_UNINIT    0             /* Gas gauge Not Initialiezd state 					*/
 #define STC3115_INIT     'I'			/* Gas gauge Init states 							*/
 #define STC3115_RUNNING  'R'			/* Gas gauge Running states 						*/
 #define STC3115_POWERDN  'D'			/* Gas gauge Stop states 							*/
@@ -119,7 +119,7 @@ typedef struct  {
  
 /* stc3115 RAM registers structure -------------------------------------------- */
 static union {
-  unsigned char db[RAM_SIZE];  /* last byte holds the CRC 						*/
+  unsigned char db[STC3115_RAM_SIZE];  /* last byte holds the CRC 						*/
   struct {
     short TestWord;       /* 0-1 RAM test word									*/
     short HRSOC;          /* 2-3 SOC backup in (1/512%)							*/
@@ -127,12 +127,12 @@ static union {
     short VM_cnf;         /* 6-7 current VM_cnf 								*/
     char SOC;             /* 8  SOC (in %) 										*/
 	char STC3115_State;   /* 9  STC3115 working state							*/
-	char unused1;         /* 10  -Bytes upto ..RAM_SIZE-2 are free				*/
-	char unused2;         /* 11  -Bytes upto ..RAM_SIZE-2 are free				*/
-	char unused3;         /* 12  -Bytes upto ..RAM_SIZE-2 are free				*/
-	char unused4;         /* 13  -Bytes upto ..RAM_SIZE-2 are free				*/
-	char unused5;         /* 14  -Bytes upto ..RAM_SIZE-2 are free				*/
-	char CRC;             /* 15  last byte RAM_SIZE-1 is the CRC				*/
+	char unused1;         /* 10  -Bytes upto ..STC3115_RAM_SIZE-2 are free				*/
+	char unused2;         /* 11  -Bytes upto ..STC3115_RAM_SIZE-2 are free				*/
+	char unused3;         /* 12  -Bytes upto ..STC3115_RAM_SIZE-2 are free				*/
+	char unused4;         /* 13  -Bytes upto ..STC3115_RAM_SIZE-2 are free				*/
+	char unused5;         /* 14  -Bytes upto ..STC3115_RAM_SIZE-2 are free				*/
+	char CRC;             /* 15  last byte STC3115_RAM_SIZE-1 is the CRC				*/
   } reg;
 } RAMData;
 

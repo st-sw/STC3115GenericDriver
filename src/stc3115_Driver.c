@@ -118,7 +118,7 @@
 				- (0) is returned if only battery SOC,Voltage and OCV data are available
 				- (1) is returned if every STC3115_BatteryData_TypeDef data are available.
 				
-	++ call the GaSGauge_Stop function during the application switch off sequence
+	++ call the GasGauge_Stop function during the application switch off sequence
 		 This will stop the STC3115 and save energy. This will help to recover the
 		 battery context during the next GasGauge_Initialization function.
 				
@@ -296,7 +296,7 @@ static int STC3115_GetStatusWord(void)
 
   /* read REG_MODE and REG_CTRL */
   value = STC3115_ReadWord(STC3115_REG_MODE);
-  value &= 0x7fff;   
+  value &= 0x7fff;   //(MSbit is unused, but used for error here)
 
   return (value);
 }
@@ -429,7 +429,7 @@ static int STC3115_Startup(STC3115_ConfigData_TypeDef *ConfigData)
 
 /*******************************************************************************
 * Function Name  : STC3115_Restore
-* Description    :  Restore STC3115 previous state
+* Description    :  Restore STC3115 previous good state from values stored in internal 16byte RAM
 * Input          : None
 * Return         : 
 *******************************************************************************/
@@ -684,12 +684,13 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
   ConfigData->Alm_Vbat = ALM_VBAT;
   
   
-  /*** Initialize Gas Gauge system ***/
+  /*** Initialize Gas Gauge system ***/ 
   
   /*Battery presence status init*/
   BatteryData->Presence = 1;
 
-  /* check RAM data validity */
+  /* check RAM data validity */ 
+  //refer to AN4324, Figure 16: STC3115 initialization type selection flowchart
   {
 	// ** Internal RAM purpose: **
 	// The STC3115 device embeds a 16-byte RAM memory area.
@@ -702,10 +703,14 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 
 	  STC3115_ReadRamData(RAMData.db);
  
-	  if ( (RAMData.reg.TestWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,STC3115_RAM_SIZE)!=0) )
+	  if ( (RAMData.reg.TestWord != RAM_TESTWORD) || (STC3115_CalcRamCRC8(RAMData.db,STC3115_RAM_SIZE)!=0) ) //RAM invalid
 	  {
-		// Fuel gauge first power-up: RAM is null or RAM not yet initialized by this Driver (no TESTWORD)
-		//or RAM invalid/corrupted (bad CRC) */
+		// RAM is empty (Fuel gauge first power-up)
+		// or RAM not yet initialized by this Driver (no TESTWORD)
+		// or RAM invalid/corrupted (bad CRC)
+		// => Full initialisation:  STC3115 init + RAM init
+		//    e.g. New battery plugged-in, using the initial battery model.
+		
 		STC3115_InitRamData(ConfigData);
 		res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
 	  }
@@ -716,12 +721,13 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 		  {
 				//PORDET detected (Power On Reset occurred after Device powered-On or a Soft-reset)
 				//or Error occured: BATFAIL (battery disconnected or Undervoltage UVLO)
+				// => Standard initialisation: STC3115 init (without RAM init)
+			    //    e.g. Battery has not been removed, but restoration from internal RAM not possible
 
 				res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
 		  }
-		  else //no specific event occured, restore the latest good SoC value for better accuracy
+		  else //Restoration OK, The battery has not been removed since the last application switch off. (no specific event occured, restore the latest good SoC value for better accuracy)
 		  {
-
 				res=STC3115_Restore(ConfigData); /* recover from last SOC */
 		  }
 	  }
@@ -828,7 +834,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
   }
 	
   /* check STC3115 running mode*/
-  if ((BatteryData->StatusWord & STC3115_GG_RUN) == 0)
+  if ((BatteryData->StatusWord & STC3115_GG_RUN) == 0) //Gas gauge no more running (in Standby mode)
   {
 		if( (RAMData.reg.STC3115_State == STC3115_RUNNING) ||
 			(RAMData.reg.STC3115_State == STC3115_POWERDN)
@@ -863,23 +869,26 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
     }
   }
 
-  if (RAMData.reg.STC3115_State != STC3115_RUNNING) /* not running : data partially availalble*/
+  if (RAMData.reg.STC3115_State != STC3115_RUNNING) /* not running : data partially available*/
   {
   	BatteryData->ChargeValue = ConfigData->Cnom * BatteryData->SOC / MAX_SOC;
     BatteryData->Current=0;
 	BatteryData->Temperature=250;
     BatteryData->RemTime = -1;
   }
-  else /*STC3115 running */
+  else /* STC3115 running */
   {
   
 	/* ---------- process SW algorithms -------- */
 		
-	/*early empty compensation*/
-	if (BatteryData->Voltage<APP_CUTOFF_VOLTAGE)
+	/* early empty compensation */
+	if (BatteryData->Voltage < APP_CUTOFF_VOLTAGE)
 		BatteryData->SOC = 0;
-	else if (BatteryData->Voltage<(APP_CUTOFF_VOLTAGE+200))
+	else if (BatteryData->Voltage < (APP_CUTOFF_VOLTAGE+200))
+	{
+		// Recommended software security: scaling down the SOC if voltage is considered too close to the cutoff voltage. (no accuracy effect) 
 		BatteryData->SOC = BatteryData->SOC * (BatteryData->Voltage - APP_CUTOFF_VOLTAGE) / 200;   
+	}
 
 	/* Battery charge value calculation */
 	BatteryData->ChargeValue = ConfigData->Cnom * BatteryData->SOC / MAX_SOC;

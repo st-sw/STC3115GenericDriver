@@ -118,7 +118,7 @@ typedef struct  {
  } STC3115_BatteryData_TypeDef;
  
 /* stc3115 RAM registers structure -------------------------------------------- */
-static union {
+static union InternalRAM {
   unsigned char db[STC3115_RAM_SIZE];  /* last byte holds the CRC 						*/
   struct {
     short TestWord;       /* 0-1 RAM test word									*/
@@ -145,10 +145,10 @@ extern "C"				//c++
 #endif					//c++
 
 
-int GasGauge_Initialization(STC3115_ConfigData_TypeDef*,STC3115_BatteryData_TypeDef*);
+int GasGauge_Initialization(STC3115_ConfigData_TypeDef*, STC3115_BatteryData_TypeDef*);
 int GasGauge_Reset(void); 
 int GasGauge_Stop(void);
-int GasGauge_Task(STC3115_ConfigData_TypeDef*,STC3115_BatteryData_TypeDef*);
+int GasGauge_Task(STC3115_ConfigData_TypeDef*, STC3115_BatteryData_TypeDef*);
 
 int STC3115_SetPowerSavingMode(void);
 int STC3115_StopPowerSavingMode(void);

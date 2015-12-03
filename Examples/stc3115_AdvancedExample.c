@@ -48,7 +48,7 @@ GasGauge_Restart:
 		if(status == -1)
 		{
 			printf("STC3115: I2C error\n");
-#if DEBUG
+#ifdef DEBUG
 			//wait to simulate the whole application restart
 			while( GasGaugeTimerFinished() != 1);
 			goto GasGauge_Restart;
@@ -96,7 +96,7 @@ GasGauge_Restart:
 	}
 
 
-#if DEBUG
+#ifdef DEBUG
 	//----------------------------------------------------------------------
 	//Check Gasgauge is running (also checked in GasGauge_Task)
 
@@ -131,7 +131,7 @@ GasGauge_Restart:
 			status = GasGauge_Stop(); //stop the Gas gauge but keep its RAM content
 			if(status != 0) printf("STC3115: Error in GasGauge_Stop\n");
 
-#if DEBUG
+#ifdef DEBUG
 			//wait to simulate the application is powered off for a couple of time
 			while( GasGaugeTimerFinished() != 1);
 			goto GasGauge_Restart;
@@ -213,13 +213,13 @@ void ChangeLowPowerMode(void)
 	{
 		mode = !mode;
 		status = STC3115_SetPowerSavingMode();
-		if(status != 0) printf("STC3115: Error in STC3115_SetPowerSavingMode\n");
+		if(status != 0) printf("STC3115: Error in SetPowerSavingMode\n");
 	}
 	else
 	{
 		mode = !mode;
 		status = STC3115_StopPowerSavingMode();
-		if(status != 0) printf("STC3115: Error in STC3115_StopPowerSavingMode\n");
+		if(status != 0) printf("STC3115: Error in StopPowerSavingMode\n");
 	}
 }
 

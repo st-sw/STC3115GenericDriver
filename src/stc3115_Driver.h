@@ -80,6 +80,7 @@
 #define STC3115_OK 					0
 #define VoltageFactor  		9011      	/* LSB=2.20mV ~9011/4096 - convert to mV         	*/
 #define CurrentFactor		24084		/* LSB=5.88uV/R= ~24084/R/4096 - convert to mA  	*/
+#define VOLTAGE_SECURITY_RANGE 200
 
 #define RAM_TESTWORD 		0x53A9		/* STC3115 RAM test word 							*/
 #define STC3115_UNINIT    0             /* Gas gauge Not Initialiezd state 					*/

@@ -884,10 +884,10 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 	/* early empty compensation */
 	if (BatteryData->Voltage < APP_CUTOFF_VOLTAGE)
 		BatteryData->SOC = 0;
-	else if (BatteryData->Voltage < (APP_CUTOFF_VOLTAGE+200))
+	else if (BatteryData->Voltage < (APP_CUTOFF_VOLTAGE+VOLTAGE_SECURITY_RANGE))
 	{
 		// Recommended software security: scaling down the SOC if voltage is considered too close to the cutoff voltage. (no accuracy effect) 
-		BatteryData->SOC = BatteryData->SOC * (BatteryData->Voltage - APP_CUTOFF_VOLTAGE) / 200;   
+		BatteryData->SOC = BatteryData->SOC * (BatteryData->Voltage - APP_CUTOFF_VOLTAGE) / VOLTAGE_SECURITY_RANGE;   
 	}
 
 	/* Battery charge value calculation */

@@ -78,6 +78,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Examples\stc3115_AdvancedExample.c" />
+    <ClCompile Include="..\..\..\..\Examples\stc3115_BasicExample.c" />
     <ClCompile Include="..\..\..\..\src\stc3115_Driver.c" />
     <ClCompile Include="..\..\..\..\src\stc3115_I2C.c" />
   </ItemGroup>

@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\..\..\Examples\stc3115_AdvancedExample.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Examples\stc3115_BasicExample.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\src\stc3115_Driver.h">

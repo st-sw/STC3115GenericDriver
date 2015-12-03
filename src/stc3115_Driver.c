@@ -444,6 +444,7 @@ static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
   STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
 
   /* restore last SOC from STC3115 embedded RAM data for better accuracy */
+  // Note: The latest SOC is saved every time GasGauge_Task() is called (i.e every 5s).
   STC3115_WriteWord(STC3115_REG_SOC,RAMData.reg.HRSOC); //force a new SoC to the fuel gauge
 
   return(0);
@@ -454,7 +455,7 @@ static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
 
 /*******************************************************************************
 * Function Name  : STC3115_Powerdown
-* Description    :  stop the STC3115 at application power down
+* Description    :  stop the STC3115 at application power down (i.e Standby mode with RAM content retention)
 * Input          : None
 * Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
@@ -670,7 +671,7 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
   if(BATT_RINT!=0)	ConfigData->VM_cnf = (BATT_CAPACITY * BATT_RINT * 50 + 24444) / 48889;
   else ConfigData->VM_cnf = (BATT_CAPACITY * 200 * 50 + 24444) / 48889; // default value
 
-  for(loop=0;loop<16;loop++)
+  for(loop=0; loop<16; loop++)
   {
 	if(OCVOffset[loop] > 127) OCVOffset[loop] = 127;
 	if(OCVOffset[loop] < -127) OCVOffset[loop] = -127;
@@ -707,14 +708,14 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 	  {
 		// RAM is empty (Fuel gauge first power-up)
 		// or RAM not yet initialized by this Driver (no TESTWORD)
-		// or RAM invalid/corrupted (bad CRC)
+		// or RAM corrupted (bad CRC)
 		// => Full initialisation:  STC3115 init + RAM init
 		//    e.g. New battery plugged-in, using the initial battery model.
 		
 		STC3115_InitRamData(ConfigData);
 		res=STC3115_Startup(ConfigData);  /* return -1 if I2C error or STC3115 not present */
 	  }
-	  else //RAM valid (ie initialization process started again)
+	  else //RAM valid (i.e initialization process started again, battery has not been removed)
 	  {
 		  /* check STC3115 status */
 		  if ( (STC3115_ReadByte(STC3115_REG_CTRL) & (STC3115_BATFAIL | STC3115_PORDET)) != 0 )
@@ -734,9 +735,11 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
   }
 
 	//Update RAM state flag to INIT state
-	RAMData.reg.STC3115_State = STC3115_INIT;
-	STC3115_UpdateRamCRC();
-	STC3115_WriteRamData(RAMData.db);
+	{
+		RAMData.reg.STC3115_State = STC3115_INIT;
+		STC3115_UpdateRamCRC();
+		STC3115_WriteRamData(RAMData.db);
+	}
   
   return(res);    /* return -1 if I2C error or STC3115 not present */
 }
@@ -783,7 +786,7 @@ int GasGauge_Stop(void)
   STC3115_UpdateRamCRC();
   STC3115_WriteRamData(RAMData.db);
    
-  /*STC3115 Power down*/
+  /*STC3115 Power down (ie Standby mode with RAM content retention))*/
   res=STC3115_Powerdown();
   if (res!=0) return (-1);  /* error */
 
@@ -930,11 +933,13 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 
   }
       
-  /* save SOC */
-  RAMData.reg.HRSOC = BatteryData->HRSOC;
-  RAMData.reg.SOC = (BatteryData->SOC+5)/10;
-  STC3115_UpdateRamCRC();
-  STC3115_WriteRamData(RAMData.db);
+  /* save SOC to internal RAM (in case of future Restore process) */
+  {
+	  RAMData.reg.HRSOC = BatteryData->HRSOC;
+	  RAMData.reg.SOC = (BatteryData->SOC+5)/10;
+	  STC3115_UpdateRamCRC();
+	  STC3115_WriteRamData(RAMData.db);
+  }
 
   if (RAMData.reg.STC3115_State==STC3115_RUNNING)
     return(1);

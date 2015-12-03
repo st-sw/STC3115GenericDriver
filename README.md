@@ -28,3 +28,6 @@ Battery State of Charge:
 ----------------
 The STC3115 driver use the ST OptimGauge(tm) algorithm to give the Optimum accuracy regarding the estimation of the battery state of charge (in %).
 
+Notes:
+----------------
+Examples based on STSW-BAT001 package: STC3115 Open source driver

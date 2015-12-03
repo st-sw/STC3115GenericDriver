@@ -36,9 +36,11 @@ int main(void)
 	unsigned int CounterValue;
 	int i;
 
-	printf("STC3115 fuel gauge driver init ...\n");
 
 GasGauge_Restart:
+
+	printf("STC3115 fuel gauge driver init ...\n");
+
 
 	//----------------------------------------------------------------------
 	//Check I2C is working and Fuel gauge device connected
@@ -125,7 +127,7 @@ GasGauge_Restart:
 	//----------------------------------------------------------------------
 	while(1) //main infinite loop
 	{
-		if(GasGauge_HardwareShutDown == 1) //Completely shutdown the platform and the Gas gauge. (not recommended, it is better ot let the Gas Gauge running, connected to battery)
+		if(GasGauge_HardwareShutDown == 1) //Completely shutdown the platform and the Gas gauge. (not recommended, it is better to let the Gas Gauge running connected to battery)
 		{
 			GasGauge_HardwareShutDown = 0;
 			status = GasGauge_Stop(); //stop the Gas gauge but keep its RAM content
@@ -161,7 +163,7 @@ GasGauge_Restart:
 
 				if (status > 0) //OK, new data available
 				{
-					printf("Battery: SoC=%i %%, Vbat= %i mV, I=%i mA, Cap=%i mAh, T= %i °C, Pres=%i ALM=%i , CCounter=%d, Time=%d s \r\n", 
+					printf("Battery: SoC=%i %%, Vbat=%i mV, I=%i mA, Cap=%i mAh, T=%i °C, Pres=%i ALM=%i , CCounter=%d, Time=%d s \r\n", 
 						STC3115_BatteryData.SOC * 0.1,
 						STC3115_BatteryData.Voltage, 
 						STC3115_BatteryData.Current, 
@@ -175,7 +177,7 @@ GasGauge_Restart:
 				}
 				else if(status == 0) //only previous SOC, OCV and voltage are valid 
 				{
-					printf("Battery: Previous_SoC=%i, Vbat=%i mV, OCV=%i mV, T=%i °C \r\n", 
+					printf("Battery: Previous_SoC=%i %%, Vbat=%i mV, OCV=%i mV, T=%i °C \r\n", 
 						STC3115_BatteryData.SOC * 0.1,
 						STC3115_BatteryData.Voltage,
 						STC3115_BatteryData.OCV,
@@ -184,7 +186,7 @@ GasGauge_Restart:
 				else if(status == -1) //error occured
 				{
 					if(STC3115_BatteryData.Presence == 0)
-					{    /*Battery disconnection has been detected			*/
+					{    /* Battery disconnection has been detected	*/
 						printf("STC3115 Error: Battery disconnected, or BATD pin level is over 1.61, or Vcc is below 2.7V \r\n");
 					}
 					else

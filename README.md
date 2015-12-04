@@ -1,5 +1,6 @@
 # STC3115GenericDriver
 STC3115 fuel gauge Open source generic driver
+(STC3115 Generic Driver)
 
 Hardware:
 ----------------
@@ -11,7 +12,7 @@ The STC3115 is designed to be power supplied directly from the battery. In this 
 
 SW Requirements:
 ----------------
-Implement the I2C driver dependant on your platform.
+Implement the I2C driver depending on your platform.
 
 SW Configuration:
 ----------------
@@ -19,7 +20,7 @@ Update the configuration file depending on the battery characteristics (Capacity
 
 SW Use:
 ----------------
-The host driver access the STC3115 via I2C every 5s typically (or longer, up to 30s).  <br />
+The host driver access the STC3115 registers via I2C every 5s typically (or longer, up to 30s).  <br />
 So a 5s timer is required to be implemented.  <br />
 
 The STC3115 monitors the battery continuously. <br />

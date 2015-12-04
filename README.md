@@ -20,9 +20,11 @@ Update the configuration file depending on the battery characteristics (Capacity
 SW Use:
 ----------------
 The host driver access the STC3115 via I2C every 5s typically (or longer, up to 30s).  <br />
-So a 5s timer is needed to implement.  <br />
-It is not needed to access the STC3115 more often because the Battery charging/discharging variation is very slow.  <br />
-However, even if the driver is access every 1s, the STC3115 algorithm still work properly.  <br />
+So a 5s timer is required to be implemented.  <br />
+
+The STC3115 monitors the battery continuously. <br />
+But It is not needed for the host to access the STC3115 more often because the Battery charging/discharging variation is very slow.  <br />
+However, even if the driver is access more frequently (every 1s), the STC3115 algorithm still works properly.  <br />
 
 Battery State of Charge:
 ----------------
@@ -30,4 +32,4 @@ The STC3115 driver use the ST OptimGauge(tm) algorithm to give the Optimum accur
 
 Notes:
 ----------------
-Examples based on STSW-BAT001 package: STC3115 Open source driver
+Examples are based on STSW-BAT001 package: STC3115 Open source driver

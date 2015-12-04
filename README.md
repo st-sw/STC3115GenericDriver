@@ -34,3 +34,7 @@ The STC3115 driver use the ST OptimGauge(tm) algorithm to give the Optimum accur
 Notes:
 ----------------
 Examples are based on STSW-BAT001 package: STC3115 Open source driver
+
+Issues:
+----------------
+For any issues, please refer to the FAQ first.

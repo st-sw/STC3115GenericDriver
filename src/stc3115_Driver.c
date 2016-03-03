@@ -204,9 +204,9 @@ static int STC3115_ReadWord(int RegAddress)
   return(value);
 }
 
-int STC3115_ReadUnsignedWord(unsigned int RegAddress, unsigned int * RegData)
+int STC3115_ReadUnsignedWord(unsigned short RegAddress, unsigned short * RegData)
 {
-  unsigned int data16;
+  unsigned short data16;
   unsigned char data8[2];
   int status;
 
@@ -296,7 +296,7 @@ static int STC3115_GetStatusWord(void)
 
   /* read REG_MODE and REG_CTRL */
   value = STC3115_ReadWord(STC3115_REG_MODE);
-  value &= 0x7fff;   //(MSbit is unused, but used for error here)
+  value &= 0x7fff;   //(MSbit is unused, but used for error dectection here)
 
   return (value);
 }
@@ -342,18 +342,18 @@ int STC3115_CheckI2cDeviceId(void)
 * Input          : None
 * Return         : status word (REG_COUNTER), -1 if error
 *******************************************************************************/
-unsigned int STC3115_GetRunningCounter(void)
+int STC3115_GetRunningCounter(void)
 {
-  unsigned int value;
+  unsigned short value;
   int status;
 
   /* read STC3115_REG_COUNTER */
   status = STC3115_ReadUnsignedWord(STC3115_REG_COUNTER, &value);
 
   if(status < 0) //error
-	  value = 0;
+	  value = -1;
 
-  return (value);
+  return ((int)value);
 }
 
 /*******************************************************************************

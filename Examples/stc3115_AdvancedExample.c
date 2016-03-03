@@ -21,7 +21,7 @@ static void Delay_ms(unsigned int value);
 void ChangeLowPowerMode(void);
 
 
-#define TIMER_LIMIT 0x5000 //arbitrary value to modify
+#define TIMER_LIMIT 0x5000 //arbitrary value to modify, and to wait 5s in normal use case
 
 
 int main(void)
@@ -33,7 +33,7 @@ int main(void)
 	volatile char GasGauge_HardwareShutDown = 0; //Optional: set to 1 when the user power down the hardware, and no need to monitor the battery
 	volatile char GasGauge_UnknowError = 0; //Optional: set to 1 by the application when unknow gas gauge error occurs
 	volatile char GasGauge_ChangeLowPowerMode = 0; //Optional: set to 1 by the application when need to decrease the gas gauge power consumption (ie. switch to voltage mode only monitoring)
-	unsigned int CounterValue;
+	int CounterValue;
 	int i;
 
 
@@ -66,14 +66,19 @@ GasGauge_Restart:
 
 
 	//----------------------------------------------------------------------
-	//Check Gasgauge is powered up & ready, and first measurement (V, I) is done (ie wait CounterValue is 3 or more)
+	//Check Gasgauge is powered up & ready, and first measurement (V, I) is done (i.e. wait CounterValue is 3 or more)
 
-	for(i=0; i<20; i++)
+	for(i=0; i<20; i++)  //check for 20*100ms = 2s
 	{
 		CounterValue = STC3115_GetRunningCounter();
 		if(CounterValue >= 3) //ok, device ready
 		{
 			break; //exit loop
+		}
+		else if(CounterValue < 0) //communication Error
+		{
+			printf("STC3115: Error power up.\n");
+			goto GasGauge_Restart;
 		}
 		else
 		{
@@ -82,7 +87,7 @@ GasGauge_Restart:
 		}
 	}
 
-	if(CounterValue < 3)
+	if(CounterValue < 3) //timeout, the devise has not started
 	{
 		printf("STC3115: Error power up.\n");
 		goto GasGauge_Restart;

@@ -162,7 +162,7 @@ int STC3115_AlarmSetVoltageThreshold(STC3115_ConfigData_TypeDef*, int);
 int STC3115_AlarmSetSOCThreshold(STC3115_ConfigData_TypeDef*, int);
 
 int STC3115_CheckI2cDeviceId(void);
-unsigned int STC3115_GetRunningCounter(void);
+int STC3115_GetRunningCounter(void);
 
 #ifdef __cplusplus	//c++
 }					//c++

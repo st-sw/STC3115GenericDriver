@@ -217,6 +217,7 @@ int STC3115_ReadUnsignedWord(unsigned short RegAddress, unsigned short * RegData
     /* no error */
     data16 = data8[1];
     data16 = (data16 <<8) | data8[0];
+    *RegData = data16;
   }
   else
     status = -1;
@@ -479,7 +480,7 @@ static int STC3115_Powerdown(void)
 /*******************************************************************************
 * Function Name  : STC3115_conv
 * Description    : conversion utility 
-*  convert a raw 16-bit value from STC3115 registers into user units (mA, mAh, mV, °C)
+*  convert a raw 16-bit value from STC3115 registers into user units (mA, mAh, mV, Â°C)
 *  (optimized routine for efficient operation on 8-bit processors such as STM8)
 * Input          : value, factor
 * Return         : result = value * factor / 4096
@@ -539,7 +540,7 @@ static int STC3115_ReadBatteryData(STC3115_BatteryData_TypeDef *BatteryData)
   /* temperature */
   value=data[10]; 
   if (value>=0x80) value -= 0x100;  /* convert to signed value */
-  BatteryData->Temperature = value*10;  /* result in 0.1°C */
+  BatteryData->Temperature = value*10;  /* result in 0.1Â°C */
 
   /* OCV */
   value=data[14]; value = (value<<8) + data[13];
@@ -700,7 +701,7 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 	//
 	// Typical use case of STC3115 Restoration is:
 	// User Platform power down (but stc3115 set in standby mode), no battery removal, and then Platform power up (stc3115 set in running mode). So Battery state context can be restored. 
-	// If the battery is removed or in case of soft reset (STC3115 soft reset), RAM content is reset, the SOC tracking will restart from “zero” (not use the RAM content). So there is no restoration in this condition.
+	// If the battery is removed or in case of soft reset (STC3115 soft reset), RAM content is reset, the SOC tracking will restart from Â“zeroÂ” (not use the RAM content). So there is no restoration in this condition.
 
 	  STC3115_ReadRamData(RAMData.db);
  

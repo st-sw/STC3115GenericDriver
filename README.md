@@ -2,6 +2,11 @@
 STC3115 fuel gauge Open source generic driver
 (STC3115 Generic Driver)
 
+Device under test:
+----------------
+Device:       STC3115 Battery Gas gage.
+Manufacturer: STMicroelectronics
+
 Hardware:
 ----------------
 Can be used on any platform with I2C Master (pin SCL & SDA) connected to I2C Slave of STC3115 device.  <br />
@@ -33,7 +38,8 @@ The STC3115 driver use the ST OptimGauge(tm) algorithm to give the Optimum accur
 
 Notes:
 ----------------
-Examples are based on STSW-BAT001 package: STC3115 Open source driver
+Source code Examples are based on STSW-BAT001 package: STC3115 Open source driver.
+The core source code is an updated and corrected version of the one provided on manufacturer website.
 
 Issues:
 ----------------

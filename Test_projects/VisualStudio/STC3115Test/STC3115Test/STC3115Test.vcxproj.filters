@@ -27,10 +27,10 @@
     <ClCompile Include="..\..\..\..\src\stc3115_Driver.c">
       <Filter>Source Files\Lib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Examples\stc3115_AdvancedExample.c">
+    <ClCompile Include="..\..\..\..\Examples\DriverExamples\stc3115_BasicExample.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Examples\stc3115_BasicExample.c">
+    <ClCompile Include="..\..\..\..\Examples\DriverExamples\stc3115_AdvancedExample.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

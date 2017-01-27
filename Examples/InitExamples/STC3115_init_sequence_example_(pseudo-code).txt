@@ -21,7 +21,7 @@
 # Check I2C is working & Device ID is correct (must be equal to 0x14)
 I2C_Read @0x18
 
-# Set GG_RUN to 0 if already active   (default value at init: 0x09)
+# [Optional]: Set GG_RUN to 0 if Device already running   (default value at init: 0x09)
 I2C_Write @0x00 0x09
 
 # Clear the Power-On Reset (POR) detection bit, and release the software-reset   (default value at init: 0x15)

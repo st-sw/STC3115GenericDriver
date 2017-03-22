@@ -409,22 +409,34 @@ static void STC3115_SetParamAndRun(STC3115_ConfigData_TypeDef *ConfigData)
 *******************************************************************************/
 static int STC3115_Startup(STC3115_ConfigData_TypeDef *ConfigData)
 {
-  int res;
-  int ocv;
-  
-  /* check STC31xx status */
-  res = STC3115_GetStatusWord();
-  if (res<0) return(res);
+	int res, HRSOC;
+	int ocv, ocv_min;
+	int OCVOffset[16] = OCV_OFFSET_TAB;
 
-  /* read OCV */
-  ocv=STC3115_ReadWord(STC3115_REG_OCV);
+	/* check STC31xx status */
+	res = STC3115_GetStatusWord();
+	if (res<0) return(res);
 
-  STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
-  
-  /* rewrite ocv to start SOC with updated OCV curve */
-  STC3115_WriteWord(STC3115_REG_OCV,ocv);
-  
-  return(0);
+	/* read OCV */
+	ocv = STC3115_ReadWord(STC3115_REG_OCV);
+
+	/* Check OCV integrity after reset: it must be above or equal to OCV min = 3300 (mV) + OCVOffset[0] (0.55mV)  */
+	ocv_min = 6000 + OCVOffset[0];
+	if (ocv <= ocv_min) 
+	{
+		HRSOC = 0;
+		res = STC3115_WriteWord(STC3115_REG_SOC, HRSOC); //force both SOC and OCV to 0
+		STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
+	}
+	else 
+	{
+		STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
+		
+		/* rewrite ocv to start SOC with updated OCV curve */
+		res = STC3115_WriteWord(STC3115_REG_OCV, ocv);
+	}
+
+	return(0);
 }
 
 

@@ -57,6 +57,7 @@
 #define STC3115_GG_RUN		0x10	 	/* Alarm enable bit mask     				*/
 #define STC3115_FORCE_CC	0x20	 	/* Force CC bit mask     					*/
 #define STC3115_FORCE_VM	0x40	 	/* Force VM bit mask     					*/
+#define STC3115_REGMODE_DEFAULT_STANDBY   	0x09   /* GG_RUN=0 (Standby mode)		*/
 
 /*STC3115 STC3115_REG_CTRL Bit mask definition ------------------------------------ */
 //ALM TBD

@@ -368,7 +368,7 @@ static void STC3115_SetParamAndRun(STC3115_ConfigData_TypeDef *ConfigData)
   int value;
   
   /* set GG_RUN=0 before changing algo parameters */
-  STC3115_WriteByte(STC3115_REG_MODE,STC3115_VMODE);
+  STC3115_WriteByte(STC3115_REG_MODE, STC3115_REGMODE_DEFAULT_STANDBY);
   
   /* init OCV curve */
 	STC3115_WriteBytes((unsigned char*) ConfigData->OCVOffset, STC3115_REG_OCVTAB, STC3115_OCVTAB_SIZE);

@@ -389,14 +389,20 @@ static void STC3115_SetParamAndRun(STC3115_ConfigData_TypeDef *ConfigData)
     STC3115_WriteByte(STC3115_REG_CURRENT_THRES,value); 
   }
   
-  /* set parameters if different from default, only if a restart is done (battery change) */
-  if (RAMData.reg.CC_cnf !=0 ) STC3115_WriteWord(STC3115_REG_CC_CNF,RAMData.reg.CC_cnf); 
-  if (RAMData.reg.VM_cnf !=0 ) STC3115_WriteWord(STC3115_REG_VM_CNF,RAMData.reg.VM_cnf); 
+  /* set parameters VM_CNF and CC_CNF */
+  if (ConfigData->CC_cnf != 0 ) STC3115_WriteWord(STC3115_REG_CC_CNF, ConfigData->CC_cnf);
+  else STC3115_WriteWord(STC3115_REG_CC_CNF, 395); //force writing a default value at startup
+  
+  if (ConfigData->VM_cnf !=0 ) STC3115_WriteWord(STC3115_REG_VM_CNF, ConfigData->VM_cnf);
+  else STC3115_WriteWord(STC3115_REG_VM_CNF, 321); //force writing a default value at startup
+
+  //if (RAMData.reg.CC_cnf != 0) STC3115_WriteWord(STC3115_REG_CC_CNF, RAMData.reg.CC_cnf);
+  //if (RAMData.reg.VM_cnf != 0) STC3115_WriteWord(STC3115_REG_VM_CNF, RAMData.reg.VM_cnf);
 
   STC3115_WriteByte(STC3115_REG_CTRL,0x03);  /*   clear PORDET, BATFAIL, free ALM pin, reset conv counter */
   STC3115_WriteByte(STC3115_REG_MODE, STC3115_GG_RUN | (STC3115_VMODE * ConfigData->Vmode) | (STC3115_ALM_ENA * ALM_EN));  /*   set GG_RUN=1, set mode, set alm enable */
  
-}  
+}
 
 
 

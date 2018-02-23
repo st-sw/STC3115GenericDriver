@@ -7,7 +7,7 @@ Device under test:
 Device:       STC3115 Battery Gas gauge.  <br />
 Manufacturer: STMicroelectronics <br />
 
-Typical Application:  Monitor single cell batteries <br />
+Typical Application:  Monitor a single cell battery <br />
 Package:      CSP and DFN10 (9 pins used) <br />
 Operating supply: 2.7V to 4.5V  <br />
 
@@ -30,16 +30,16 @@ Update the configuration file depending on the battery characteristics (Capacity
 
 SW Use:
 ----------------
-The host driver access the STC3115 registers via I2C every 5s typically (or longer, up to 30s).  <br />
+The host driver accesses the STC3115 registers via I2C every 5s typically (or longer, up to 30s).  <br />
 So a 5s timer is required to be implemented.  <br />
 
 The STC3115 monitors the battery continuously. <br />
 But It is not needed for the host to access the STC3115 more often because the Battery charging/discharging variation is very slow.  <br />
-However, even if the driver is access more frequently (every 1s), the STC3115 algorithm still works properly.  <br />
+However, even if the driver is accessed more frequently (every 1s), the STC3115 algorithm still works properly.  <br />
 
 Battery State of Charge:
 ----------------
-The STC3115 driver use the ST OptimGauge(tm) algorithm to give the Optimum accuracy regarding the estimation of the battery state of charge (in %).
+The STC3115 driver uses the ST OptimGauge(tm) algorithm to give the Optimum accuracy regarding the estimation of the battery state of charge (in %).
 
 Notes:
 ----------------

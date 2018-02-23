@@ -4,13 +4,18 @@ STC3115 fuel gauge Open source generic driver
 
 Device under test:
 ----------------
-Device:       STC3115 Battery Gas gage.  
-Manufacturer: STMicroelectronics
+Device:       STC3115 Battery Gas gauge.  <br />
+Manufacturer: STMicroelectronics <br />
+
+Typical Application:  Monitor single cell batteries <br />
+Package:      CSP and DFN10 (9 pins used) <br />
+Operating supply: 2.7V to 4.5V  <br />
+
 
 Hardware:
 ----------------
-Can be used on any platform with I2C Master (pin SCL & SDA) connected to I2C Slave of STC3115 device.  <br />
-For instance: STM32 Nucleo board, STM32 discovery board, Arduino, ...  <br />
+Can be used on any platform with I2C Master (SCL & SDA pins) connected to I2C Slave of STC3115 device.  <br />
+For instance: STM32 Nucleo board, STM32 discovery board, Arduino, Raspberry Pi, Android dev kit, ...  <br />
 
 The STC3115 is designed to be power supplied directly from the battery. In this case, the STC3115 remains active even if the whole platform is in standby or powered off.
 
@@ -44,7 +49,7 @@ The core of source code in this repository is an updated and corrected version o
 
 Issues:
 ----------------
-For any issues, please refer to the FAQ first.
+For common issues, please refer to the FAQ first.
 
 A short FAQ is available here: 
 https://github.com/st-sw/STC3115GenericDriver/wiki/STC3115-FAQ

@@ -4,12 +4,17 @@ STC3115 fuel gauge Open source generic driver
 
 Device under test:
 ----------------
-Device:       STC3115 Battery Gas gauge.  <br />
-Manufacturer: STMicroelectronics <br />
+_Device_:       STC3115 Battery Gas gauge.  <br />
+_Manufacturer_: STMicroelectronics <br />
 
 Typical Application:  Monitor a single cell battery <br />
 Package:      CSP and DFN10 (9 pins used) <br />
-Operating supply: 2.7V to 4.5V  <br />
+Operating supply: 2.7V to 4.5V  <br/>
+
+* Order code: <br/>
+There are 2 versions of STC3115. Use the right part number depending on your battery max voltage.
+  * STC3115IxT for battery from 3V to 4.35V max (order code: STC3115IJT or STC3115IQT) 
+  * STC3115AIxT for battery from 3V to 4.20V max (order code:STC3115AIJT or STC3115AIQT)
 
 
 Hardware:

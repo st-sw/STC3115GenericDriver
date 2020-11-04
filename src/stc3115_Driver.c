@@ -129,6 +129,11 @@
 				
 */
 
+/* ******************************************************************************** */
+/*        SPECIAL FUNCTIONS                                                         */
+/* -------------------------------------------------------------------------------- */
+#define OCV_RAM_BACKUP //Optional feature to improve SOC accuracy after a reset
+
 
 /* ---- STC3115 I2C R/W interface --------------------------------------------- */
 
@@ -445,14 +450,31 @@ static int STC3115_Startup(STC3115_ConfigData_TypeDef *ConfigData)
 	return(0);
 }
 
+/*******************************************************************************
+* Function Name  : STC31xx_SaveBackupSocToRam
+* Description    : Save Backup data to RAM for restoration process
+* Input          : None
+* Return         : -1 if error
+*******************************************************************************/
+int STC31xx_SaveBackupSocToRam(unsigned char * p_RamData)
+{
+	int status;
+	  
+	/* update the RAM crc8 */
+	STC3115_UpdateRamCRC();
+
+	status = STC3115_WriteDataToRam(p_RamData);
+	return status;
+}
+
 
 /*******************************************************************************
-* Function Name  : STC3115_Restore
+* Function Name  : STC3115_RestoreFromRam
 * Description    :  Restore STC3115 previous good state from values stored in internal 16byte RAM
 * Input          : None
 * Return         : 
 *******************************************************************************/
-static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
+static int STC3115_RestoreFromRam(STC3115_ConfigData_TypeDef *ConfigData)
 {
   int res;
 
@@ -462,9 +484,14 @@ static int STC3115_Restore(STC3115_ConfigData_TypeDef *ConfigData)
  
   STC3115_SetParamAndRun(ConfigData);  /* set STC3115 parameters and run it  */
 
-  /* restore last SOC from STC3115 embedded RAM data for better accuracy */
+#ifdef OCV_RAM_BACKUP
+  /*if restore from unexpected reset, restore last SOC from STC3115 embedded RAM data for better accuracy */
   // Note: The latest SOC is saved every time GasGauge_Task() is called (i.e every 5s).
-  STC3115_WriteWord(STC3115_REG_SOC,RAMData.reg.HRSOC); //force a new SoC to the fuel gauge
+  if( (RAMData.reg.SOC != 0) && (RAMData.reg.HRSOC != 0) )
+  {
+	STC3115_WriteWord(STC3115_REG_SOC, RAMData.reg.HRSOC); //force a new SoC to the fuel gauge
+  }
+#endif  
 
   return(0);
 }
@@ -589,12 +616,12 @@ static int STC3115_ReadRamData(unsigned char *RamData)
 }
 
 /*******************************************************************************
-* Function Name  : STC3115_WriteRamData
+* Function Name  : STC3115_WriteDataToRam
 * Description    : utility function to write the RAM data into STC3115
 * Input          : ref to RAM data array
 * Return         : error status (STC3115_OK, !STC3115_OK)
 *******************************************************************************/
-static int STC3115_WriteRamData(unsigned char *RamData)
+static int STC3115_WriteDataToRam(unsigned char *RamData)
 {
 	return STC3115_WriteBytes(RamData, STC3115_REG_RAM, STC3115_RAM_SIZE);
 }
@@ -633,8 +660,9 @@ static int STC3115_UpdateRamCRC(void)
 {
   int res;
   
-  res=STC3115_CalcRamCRC8(RAMData.db,STC3115_RAM_SIZE-1);
+  res=STC3115_CalcRamCRC8(RAMData.db, STC3115_RAM_SIZE-1);
   RAMData.db[STC3115_RAM_SIZE-1] = res;   /* last byte holds the CRC */
+  //RAMData.reg.CRC = res;   /* last byte holds the CRC */
   return(res);
 }
 
@@ -719,7 +747,7 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 	//
 	// Typical use case of STC3115 Restoration is:
 	// User Platform power down (but stc3115 set in standby mode), no battery removal, and then Platform power up (stc3115 set in running mode). So Battery state context can be restored. 
-	// If the battery is removed or in case of soft reset (STC3115 soft reset), RAM content is reset, the SOC tracking will restart from zero (not use the RAM content). So there is no restoration in this condition.
+	// If the battery is removed or in case of soft reset (STC3115 soft reset), RAM content is reset, the SOC tracking will restart from zero (not use the RAM content). So there is no restoration in this condition.
 
 	  STC3115_ReadRamData(RAMData.db);
  
@@ -748,7 +776,7 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 		  }
 		  else //Restoration OK, The battery has not been removed since the last application switch off. (no specific event occured, restore the latest good SoC value for better accuracy)
 		  {
-				res=STC3115_Restore(ConfigData); /* recover from last SOC */
+				res=STC3115_RestoreFromRam(ConfigData); /* recover from last SOC */
 		  }
 	  }
   }
@@ -757,7 +785,7 @@ int GasGauge_Initialization(STC3115_ConfigData_TypeDef *ConfigData, STC3115_Batt
 	{
 		RAMData.reg.STC3115_State = STC3115_INIT;
 		STC3115_UpdateRamCRC();
-		STC3115_WriteRamData(RAMData.db);
+		STC3115_WriteDataToRam(RAMData.db);
 	}
   
   return(res);    /* return -1 if I2C error or STC3115 not present */
@@ -776,7 +804,7 @@ int GasGauge_Reset(void)
   /* reset RAM */
   RAMData.reg.TestWord=0;  
   RAMData.reg.STC3115_State = STC3115_UNINIT;
-  res = STC3115_WriteRamData(RAMData.db);
+  res = STC3115_WriteDataToRam(RAMData.db);
   if(res != STC3115_OK) return res;
   
   /* reset STC3115*/
@@ -803,7 +831,7 @@ int GasGauge_Stop(void)
   
   /* update the crc */
   STC3115_UpdateRamCRC();
-  STC3115_WriteRamData(RAMData.db);
+  STC3115_WriteDataToRam(RAMData.db);
    
   /*STC3115 Power down (ie Standby mode with RAM content retention))*/
   res=STC3115_Powerdown();
@@ -862,7 +890,7 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 			(RAMData.reg.STC3115_State == STC3115_POWERDN)
 			)
 		{
-			STC3115_Restore(ConfigData);  /* if RUNNING state, restore STC3115 with latest good SoC value for better accuracy */
+			STC3115_RestoreFromRam(ConfigData);  /* if RUNNING state, restore STC3115 with latest good SoC value for better accuracy */
 		}
 		else
 		{
@@ -917,17 +945,13 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 
 	if ((BatteryData->StatusWord & STC3115_VMODE) == 0) /* mixed mode only*/
 	{  
-		
 		/*Lately fully compensation*/
-		if ((BatteryData->StatusWord & STC3115_VMODE) == 0) /*running in mixed mode*/
-		{ 
-			
-			if(BatteryData->Current > APP_EOC_CURRENT && BatteryData->SOC > 990)
-			{
-				BatteryData->SOC = 990;
-				STC3115_WriteWord(STC3115_REG_SOC,50688);   /* 99% */  //force a new SoC displayed by fuel gauge
-			}
+		if(BatteryData->Current > APP_EOC_CURRENT && BatteryData->SOC > 990)
+		{
+			BatteryData->SOC = 990;
+			STC3115_WriteWord(STC3115_REG_SOC, 99*512); //99% (99*512= 50688) //force a new SoC displayed by fuel gauge
 		}
+
 		
 		/*Remaining time calculation*/
 		if(BatteryData->Current < 0)
@@ -947,21 +971,20 @@ int GasGauge_Task(STC3115_ConfigData_TypeDef *ConfigData,STC3115_BatteryData_Typ
 	}
 	
 	//SOC min/max clamping
-	if(BatteryData->SOC>1000) BatteryData->SOC = MAX_SOC;
-	if(BatteryData->SOC<0) BatteryData->SOC = 0;
+	if(BatteryData->SOC > 1000) BatteryData->SOC = MAX_SOC;
+	if(BatteryData->SOC < 0) BatteryData->SOC = 0;
 
   }
       
-  /* save SOC to internal RAM (in case of future Restore process) */
+  /* save periodically the last valid SOC to internal RAM (in case of future Restore process) */
   {
 	  RAMData.reg.HRSOC = BatteryData->HRSOC;
 	  RAMData.reg.SOC = (BatteryData->SOC+5)/10;
-	  STC3115_UpdateRamCRC();
-	  STC3115_WriteRamData(RAMData.db);
+	  STC31xx_SaveBackupSocToRam(RAMData.db);
   }
 
   if (RAMData.reg.STC3115_State==STC3115_RUNNING)
-    return(1);
+    return(1);  //OK
   else
     return(0);  /* only SOC, OCV and voltage are valid */
 }

@@ -40,7 +40,6 @@ int main1(void)
 			GasGauge_Task(&STC3115_ConfigData, &STC3115_BatteryData); 
 			printf("Vbat: %i mV, I=%i mA SoC=%i, C=%i, P=%i A=%i , CC=%d\r\n", 
 				STC3115_BatteryData.Voltage, 
-				STC3115_BatteryData.Voltage, 
 				STC3115_BatteryData.Current, 
 				STC3115_BatteryData.SOC, 
 				STC3115_BatteryData.ChargeValue, 
